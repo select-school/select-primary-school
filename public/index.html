@@ -290,17 +290,15 @@
     </div>
   </dialog>
 
-  <script type="module">
-    import { initRanking } from './js/ranking.js';
-    import { setAppState, fetchSchools, fetchSchoolNets, buildDistrictNetsMap } from './js/shared.js';
-    import { initRouter } from './js/router.js';
+  <script>
+    // Set by deployment — empty for local dev (auth skipped)
+    window.__SUPABASE_URL = '';
+    window.__SUPABASE_ANON_KEY = '';
+  </script>
 
-    const [schools, nets] = await Promise.all([fetchSchools(), fetchSchoolNets()]);
-    setAppState('allSchools', schools);
-    setAppState('schoolNets', nets);
-    setAppState('districtNetsMap', buildDistrictNetsMap(nets));
-    initRouter();
-    initRanking();
+  <script type="module">
+    import { initAuth } from './js/auth.js';
+    initAuth();
   </script>
 </body>
 </html>
