@@ -16,21 +16,6 @@
   font-weight: 700;
 }
 
-#filter-district, #filter-net {
-  appearance: auto;
-}
-
-/* Fix multi-select to look like dropdown when collapsed */
-select[multiple] {
-  overflow: hidden;
-}
-select[multiple]:focus {
-  overflow: auto;
-  position: absolute;
-  z-index: 100;
-  min-height: 200px;
-}
-
 /* Mobile card tap area */
 .school-card {
   cursor: pointer;
@@ -45,13 +30,3 @@ tr.selected-for-compare {
   background-color: oklch(var(--p) / 0.08) !important;
 }
 
-.compare-grid {
-  display: grid;
-  gap: 1rem;
-}
-
-@media (min-width: 768px) {
-  .compare-grid {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  }
-}

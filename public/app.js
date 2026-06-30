@@ -4,12 +4,17 @@ let selectedForCompare = new Set();
 let expandedRow = null;
 
 async function init() {
-  const [schoolsRes, netsRes] = await Promise.all([
-    fetch('/api/schools'),
-    fetch('/api/school-nets'),
-  ]);
-  allSchools = await schoolsRes.json();
-  schoolNets = await netsRes.json();
+  try {
+    const [schoolsRes, netsRes] = await Promise.all([
+      fetch('/api/schools'),
+      fetch('/api/school-nets'),
+    ]);
+    allSchools = await schoolsRes.json();
+    schoolNets = await netsRes.json();
+  } catch (err) {
+    console.error('載入資料失敗:', err);
+    return;
+  }
 
   populateFilterOptions();
   bindFilterEvents();
@@ -18,33 +23,51 @@ async function init() {
 
 function populateFilterOptions() {
   const districts = [...new Set(allSchools.map(s => s.district))].sort();
-  const districtSelect = document.getElementById('filter-district');
+  const districtContainer = document.getElementById('district-options');
   districts.forEach(d => {
-    const opt = document.createElement('option');
-    opt.value = d;
-    opt.textContent = d;
-    districtSelect.appendChild(opt);
+    const label = document.createElement('label');
+    label.className = 'flex items-center gap-2 p-1 cursor-pointer hover:bg-base-200 rounded';
+    label.innerHTML = `<input type="checkbox" class="checkbox checkbox-sm district-check" value="${d}"><span class="text-sm">${d}</span>`;
+    districtContainer.appendChild(label);
   });
 
   const nets = [...new Set(Object.keys(schoolNets).map(Number))].sort((a, b) => a - b);
-  const netSelect = document.getElementById('filter-net');
+  const netContainer = document.getElementById('net-options');
   nets.forEach(n => {
-    const opt = document.createElement('option');
-    opt.value = n;
-    opt.textContent = `${n} (${schoolNets[String(n)]})`;
-    netSelect.appendChild(opt);
+    const label = document.createElement('label');
+    label.className = 'flex items-center gap-2 p-1 cursor-pointer hover:bg-base-200 rounded';
+    label.innerHTML = `<input type="checkbox" class="checkbox checkbox-sm net-check" value="${n}"><span class="text-sm">${n} (${schoolNets[String(n)]})</span>`;
+    netContainer.appendChild(label);
   });
+
+  districtContainer.addEventListener('change', () => {
+    updateDropdownLabel('district');
+    render();
+  });
+  netContainer.addEventListener('change', () => {
+    updateDropdownLabel('net');
+    render();
+  });
+}
+
+function updateDropdownLabel(type) {
+  if (type === 'district') {
+    const checked = [...document.querySelectorAll('.district-check:checked')];
+    document.getElementById('district-label').textContent =
+      checked.length === 0 ? '全部地區' : `已選 ${checked.length} 個地區`;
+  } else {
+    const checked = [...document.querySelectorAll('.net-check:checked')];
+    document.getElementById('net-label').textContent =
+      checked.length === 0 ? '全部校網' : `已選 ${checked.length} 個校網`;
+  }
 }
 
 function getFilters() {
   const search = document.getElementById('filter-search').value.trim().toLowerCase();
-  const districtSelect = document.getElementById('filter-district');
-  const selectedDistricts = [...districtSelect.selectedOptions]
-    .map(o => o.value)
-    .filter(v => v !== '');
-  const netSelect = document.getElementById('filter-net');
-  const selectedNets = [...netSelect.selectedOptions]
-    .map(o => Number(o.value))
+  const selectedDistricts = [...document.querySelectorAll('.district-check:checked')]
+    .map(cb => cb.value);
+  const selectedNets = [...document.querySelectorAll('.net-check:checked')]
+    .map(cb => Number(cb.value))
     .filter(v => !isNaN(v));
   const gender = document.querySelector('input[name="gender"]:checked')?.value || '';
   const rating = document.querySelector('input[name="rating"]:checked')?.value || '';
@@ -78,8 +101,7 @@ function applyFilters() {
 
 function bindFilterEvents() {
   document.getElementById('filter-search').addEventListener('input', render);
-  document.getElementById('filter-district').addEventListener('change', render);
-  document.getElementById('filter-net').addEventListener('change', render);
+  // District and net filter change events are bound in populateFilterOptions
   document.querySelectorAll('input[name="gender"]').forEach(r => r.addEventListener('change', render));
   document.querySelectorAll('input[name="rating"]').forEach(r => r.addEventListener('change', render));
   document.getElementById('clear-filters').addEventListener('click', clearFilters);
@@ -87,7 +109,6 @@ function bindFilterEvents() {
 
   document.getElementById('compare-btn').addEventListener('click', showComparison);
   document.getElementById('compare-clear').addEventListener('click', clearCompare);
-  document.getElementById('select-all').addEventListener('change', toggleSelectAll);
 }
 
 function toggleFilters() {
@@ -99,8 +120,10 @@ function toggleFilters() {
 
 function clearFilters() {
   document.getElementById('filter-search').value = '';
-  document.getElementById('filter-district').selectedIndex = 0;
-  document.getElementById('filter-net').selectedIndex = 0;
+  document.querySelectorAll('.district-check').forEach(cb => { cb.checked = false; });
+  document.querySelectorAll('.net-check').forEach(cb => { cb.checked = false; });
+  document.getElementById('district-label').textContent = '全部地區';
+  document.getElementById('net-label').textContent = '全部校網';
   document.querySelector('input[name="gender"][value=""]').checked = true;
   document.querySelector('input[name="rating"][value=""]').checked = true;
   render();
@@ -239,10 +262,10 @@ function renderDetailPanel(school) {
         <div>
           <h4 class="font-bold text-sm mb-2">我的評級</h4>
           <div class="flex gap-2 mb-2">
-            <button class="btn btn-sm rating-btn ${ud.rating === 'Top' ? 'btn-success active' : 'btn-outline'}" onclick="setRating('${school.id}', 'Top', this)">Top</button>
-            <button class="btn btn-sm rating-btn ${ud.rating === 'High' ? 'btn-warning active' : 'btn-outline'}" onclick="setRating('${school.id}', 'High', this)">High</button>
-            <button class="btn btn-sm rating-btn ${ud.rating === 'Medium' ? 'btn-ghost active' : 'btn-outline'}" onclick="setRating('${school.id}', 'Medium', this)">Medium</button>
-            <button class="btn btn-sm btn-outline" onclick="setRating('${school.id}', null, this)">清除</button>
+            <button class="btn btn-sm rating-btn ${ud.rating === 'Top' ? 'btn-success active' : 'btn-outline'}" onclick="setRating('${school.id}', 'Top')">Top</button>
+            <button class="btn btn-sm rating-btn ${ud.rating === 'High' ? 'btn-warning active' : 'btn-outline'}" onclick="setRating('${school.id}', 'High')">High</button>
+            <button class="btn btn-sm rating-btn ${ud.rating === 'Medium' ? 'btn-ghost active' : 'btn-outline'}" onclick="setRating('${school.id}', 'Medium')">Medium</button>
+            <button class="btn btn-sm btn-outline" onclick="setRating('${school.id}', null)">清除</button>
           </div>
           <textarea class="textarea textarea-bordered w-full text-sm mb-1" rows="2" placeholder="評級原因..."
             id="reason-${school.id}" onchange="saveRating('${school.id}')">${ud.ratingReason || ''}</textarea>
@@ -250,7 +273,7 @@ function renderDetailPanel(school) {
           <h4 class="font-bold text-sm mb-2 mt-3">備註</h4>
           <textarea class="textarea textarea-bordered w-full text-sm" rows="3" placeholder="添加備註..."
             id="notes-${school.id}">${ud.notes || ''}</textarea>
-          <button class="btn btn-sm btn-primary mt-1" onclick="saveNotes('${school.id}')">儲存備註</button>
+          <button class="btn btn-sm btn-primary mt-1" onclick="saveNotes('${school.id}', this)">儲存備註</button>
         </div>
       </div>
     </div>
@@ -272,13 +295,18 @@ function showDetailModal(school) {
   document.getElementById('detail-modal').showModal();
 }
 
-async function setRating(id, rating, btn) {
+async function setRating(id, rating) {
   const reason = document.getElementById(`reason-${id}`)?.value || '';
-  await fetch(`/api/schools/${id}/ranking`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ rating, ratingReason: reason }),
-  });
+  try {
+    await fetch(`/api/schools/${id}/ranking`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rating, ratingReason: reason }),
+    });
+  } catch (err) {
+    console.error('儲存評級失敗:', err);
+    return;
+  }
   const school = allSchools.find(s => s.id === id);
   if (school) {
     if (!school.userData) school.userData = {};
@@ -292,30 +320,39 @@ async function saveRating(id) {
   const school = allSchools.find(s => s.id === id);
   const rating = school?.userData?.rating || null;
   const reason = document.getElementById(`reason-${id}`)?.value || '';
-  await fetch(`/api/schools/${id}/ranking`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ rating, ratingReason: reason }),
-  });
+  try {
+    await fetch(`/api/schools/${id}/ranking`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rating, ratingReason: reason }),
+    });
+  } catch (err) {
+    console.error('儲存評級失敗:', err);
+    return;
+  }
   if (school) {
     if (!school.userData) school.userData = {};
     school.userData.ratingReason = reason;
   }
 }
 
-async function saveNotes(id) {
+async function saveNotes(id, btn) {
   const notes = document.getElementById(`notes-${id}`)?.value || '';
-  await fetch(`/api/schools/${id}/notes`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ notes }),
-  });
+  try {
+    await fetch(`/api/schools/${id}/notes`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ notes }),
+    });
+  } catch (err) {
+    console.error('儲存備註失敗:', err);
+    return;
+  }
   const school = allSchools.find(s => s.id === id);
   if (school) {
     if (!school.userData) school.userData = {};
     school.userData.notes = notes;
   }
-  const btn = event?.target;
   if (btn) {
     btn.textContent = '已儲存 ✓';
     setTimeout(() => btn.textContent = '儲存備註', 1500);
@@ -331,17 +368,8 @@ function toggleCompare(id) {
   render();
 }
 
-function toggleSelectAll(e) {
-  // Not practical for compare (max 3), so just toggle all checkboxes off
-  if (!e.target.checked) {
-    selectedForCompare.clear();
-    render();
-  }
-}
-
 function clearCompare() {
   selectedForCompare.clear();
-  document.getElementById('select-all').checked = false;
   render();
 }
 

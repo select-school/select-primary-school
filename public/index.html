@@ -37,16 +37,26 @@
           <!-- District -->
           <div class="form-control w-full md:w-48">
             <label class="label"><span class="label-text">地區</span></label>
-            <select id="filter-district" class="select select-bordered select-sm w-full" multiple size="1">
-              <option value="">全部地區</option>
-            </select>
+            <div class="dropdown w-full" id="district-dropdown">
+              <label tabindex="0" class="btn btn-sm btn-outline w-full justify-between">
+                <span id="district-label">全部地區</span> ▼
+              </label>
+              <div tabindex="0" class="dropdown-content bg-base-100 shadow-lg rounded-box p-2 w-56 max-h-60 overflow-y-auto z-50">
+                <div id="district-options"></div>
+              </div>
+            </div>
           </div>
           <!-- School Net -->
           <div class="form-control w-full md:w-48">
             <label class="label"><span class="label-text">校網</span></label>
-            <select id="filter-net" class="select select-bordered select-sm w-full" multiple size="1">
-              <option value="">全部校網</option>
-            </select>
+            <div class="dropdown w-full" id="net-dropdown">
+              <label tabindex="0" class="btn btn-sm btn-outline w-full justify-between">
+                <span id="net-label">全部校網</span> ▼
+              </label>
+              <div tabindex="0" class="dropdown-content bg-base-100 shadow-lg rounded-box p-2 w-56 max-h-60 overflow-y-auto z-50">
+                <div id="net-options"></div>
+              </div>
+            </div>
           </div>
           <!-- Gender -->
           <div class="form-control">
@@ -106,7 +116,7 @@
       <table class="table table-zebra w-full" id="school-table">
         <thead>
           <tr>
-            <th class="w-8"><input type="checkbox" id="select-all" class="checkbox checkbox-sm"></th>
+            <th class="w-8"></th>
             <th>排名</th>
             <th>學校名稱</th>
             <th>性別</th>
