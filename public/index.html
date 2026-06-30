@@ -291,8 +291,16 @@
   </dialog>
 
   <script type="module">
-    import { initAuth } from './js/auth.js';
-    initAuth();
+    import { initRanking } from './js/ranking.js';
+    import { setAppState, fetchSchools, fetchSchoolNets, buildDistrictNetsMap } from './js/shared.js';
+    import { initRouter } from './js/router.js';
+
+    const [schools, nets] = await Promise.all([fetchSchools(), fetchSchoolNets()]);
+    setAppState('allSchools', schools);
+    setAppState('schoolNets', nets);
+    setAppState('districtNetsMap', buildDistrictNetsMap(nets));
+    initRouter();
+    initRanking();
   </script>
 </body>
 </html>
