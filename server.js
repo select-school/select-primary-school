@@ -26,13 +26,8 @@ function saveUserData(data) {
   fs.writeFileSync(USER_DATA_PATH, JSON.stringify(data, null, 2), 'utf-8');
 }
 
-app.get('/api/schools', (req, res) => {
-  res.json(schools);
-});
-
-app.get('/api/school-nets', (req, res) => {
-  res.json(schoolNets);
-});
+app.get('/api/schools', (req, res) => res.json(schools));
+app.get('/api/school-nets', (req, res) => res.json(schoolNets));
 
 app.get('/api/user-data', (req, res) => {
   res.json(loadUserData());
@@ -40,15 +35,20 @@ app.get('/api/user-data', (req, res) => {
 
 app.put('/api/user-data', (req, res) => {
   const { id, rating, ratingReason, notes } = req.body;
-  if (!id || !schools.find(s => s.id === id)) {
-    return res.status(404).json({ error: 'School not found' });
-  }
+  if (!id) return res.status(400).json({ error: 'Missing id' });
   const userData = loadUserData();
   if (!userData[id]) userData[id] = {};
   if (rating !== undefined) userData[id].rating = rating;
   if (ratingReason !== undefined) userData[id].ratingReason = ratingReason;
   if (notes !== undefined) userData[id].notes = notes;
   userData[id].updatedAt = new Date().toISOString();
+  saveUserData(userData);
+  res.json({ success: true });
+});
+
+app.put('/api/preferences', (req, res) => {
+  const userData = loadUserData();
+  userData._preferences = { ...req.body, updatedAt: new Date().toISOString() };
   saveUserData(userData);
   res.json({ success: true });
 });

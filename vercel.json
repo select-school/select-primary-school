@@ -1,0 +1,9 @@
+{
+  "buildCommand": "",
+  "outputDirectory": "public",
+  "framework": null,
+  "rewrites": [
+    { "source": "/api/schools", "destination": "/schools.json" },
+    { "source": "/api/school-nets", "destination": "/school_nets.json" }
+  ]
+}
