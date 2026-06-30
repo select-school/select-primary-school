@@ -291,9 +291,10 @@
   </dialog>
 
   <script>
-    // Set by deployment — empty for local dev (auth skipped)
-    window.__SUPABASE_URL = '';
-    window.__SUPABASE_ANON_KEY = '';
+    // Populated by Vercel env vars via build-time injection
+    // For local dev these stay empty and auth is skipped
+    window.__SUPABASE_URL = '%%SUPABASE_URL%%';
+    window.__SUPABASE_ANON_KEY = '%%SUPABASE_ANON_KEY%%';
   </script>
 
   <script type="module">
