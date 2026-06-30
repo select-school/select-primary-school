@@ -70,10 +70,12 @@ def fetch_school_detail(build_id, school_id):
         return {}
 
     assessment = (s.get('diversifiedAssessment') or '').replace('<br>', '\n').replace('<br/>', '\n')
+    school_net = s.get('schoolNet')
     return {
         '學費': s.get('primarySchoolFee') or '-',
         '多元學習評估': assessment,
         '相關中學': format_related_schools(s),
+        '校網': str(school_net) if school_net else '',
         '學校佔地面積': f"{s['areaOccupied']}平方米" if s.get('areaOccupied') else '',
         '課室數目': s.get('classroomCount') or '',
         '特別室': s.get('specialRoom') or '',
@@ -86,14 +88,13 @@ def main():
     build_id, schools = parse_ranking_table(next_data)
     print(f"Found {len(schools)} schools, build ID: {build_id}")
 
-    non_girl = [s for s in schools if s['category'] != '女校']
-    print(f"After excluding girl schools: {len(non_girl)} schools")
+    print(f"Processing all {len(schools)} schools")
 
-    columns = ['排名', '學校名稱', '學生性別', '校網地區', '學費', '多元學習評估', '相關中學', '學校佔地面積', '課室數目', '特別室', '學校設施']
+    columns = ['排名', '學校名稱', '學生性別', '校網地區', '學費', '多元學習評估', '相關中學', '校網', '學校佔地面積', '課室數目', '特別室', '學校設施']
 
     results = []
-    for i, school in enumerate(non_girl):
-        print(f"  [{i+1}/{len(non_girl)}] Fetching {school['name']}...", end='', flush=True)
+    for i, school in enumerate(schools):
+        print(f"  [{i+1}/{len(schools)}] Fetching {school['name']}...", end='', flush=True)
         try:
             detail = fetch_school_detail(build_id, school['id'])
             row = {
