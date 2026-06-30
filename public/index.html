@@ -3,147 +3,262 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>香港小學排名 2026</title>
+  <title>幫你揀小學</title>
   <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.22/dist/full.min.css" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="min-h-screen bg-base-200">
 
-  <!-- Navbar -->
-  <div class="navbar bg-base-100 shadow-md sticky top-0 z-50">
-    <div class="flex-1">
-      <span class="text-xl font-bold px-4">🏫 香港小學排名 2026</span>
-    </div>
-    <div class="flex-none">
-      <span id="school-count" class="text-sm text-base-content/60 px-4"></span>
+  <!-- Login page (shown when not authenticated) -->
+  <div id="login-page" class="hidden min-h-screen flex items-center justify-center">
+    <div class="card bg-base-100 shadow-xl w-full max-w-sm">
+      <div class="card-body items-center text-center">
+        <h1 class="text-2xl font-bold">🏫 幫你揀小學</h1>
+        <p class="text-sm text-base-content/60 mt-1">設定你的偏好，方便整理和比較心儀學校</p>
+        <div class="w-full mt-6 space-y-3">
+          <button id="google-login-btn" class="btn btn-primary w-full">使用 Google 登入</button>
+          <div class="divider text-xs">或</div>
+          <div id="email-login-form">
+            <input type="email" id="login-email" placeholder="電郵地址" class="input input-bordered w-full mb-2">
+            <button id="email-otp-btn" class="btn btn-outline w-full">發送驗證碼</button>
+          </div>
+          <div id="otp-verify-form" class="hidden">
+            <input type="text" id="otp-code" placeholder="輸入驗證碼" class="input input-bordered w-full mb-2" maxlength="6">
+            <button id="otp-verify-btn" class="btn btn-primary w-full">驗證</button>
+            <button id="otp-back-btn" class="btn btn-ghost btn-sm w-full mt-1">返回</button>
+          </div>
+        </div>
+        <p id="login-error" class="text-error text-sm mt-2 hidden"></p>
+      </div>
     </div>
   </div>
 
-  <!-- Filter Bar -->
-  <div class="bg-base-100 border-b p-4">
-    <div class="max-w-7xl mx-auto">
-      <!-- Mobile filter toggle -->
-      <button id="filter-toggle" class="btn btn-sm btn-outline md:hidden mb-2 w-full">
-        篩選條件 ▼
-      </button>
-      <div id="filter-panel" class="hidden md:block">
-        <div class="flex flex-wrap gap-4 items-end">
-          <!-- Search -->
-          <div class="form-control w-full md:w-64">
-            <label class="label"><span class="label-text">搜尋學校</span></label>
-            <input type="text" id="filter-search" placeholder="學校名稱..." class="input input-bordered input-sm w-full">
-          </div>
-          <!-- District -->
-          <div class="form-control w-full md:w-48">
-            <label class="label"><span class="label-text">地區</span></label>
-            <div class="dropdown w-full" id="district-dropdown">
-              <label tabindex="0" class="btn btn-sm btn-outline w-full justify-between">
-                <span id="district-label">全部地區</span> ▼
-              </label>
-              <div tabindex="0" class="dropdown-content bg-base-100 shadow-lg rounded-box p-2 w-56 max-h-60 overflow-y-auto z-50">
-                <div id="district-options"></div>
+  <!-- App (shown when authenticated) -->
+  <div id="app-container" class="hidden">
+
+    <!-- Desktop sidebar -->
+    <aside id="sidebar" class="fixed left-0 top-0 h-full w-56 bg-base-100 border-r z-40 hidden md:flex flex-col">
+      <div class="p-4 border-b">
+        <span class="text-lg font-bold">🏫 幫你揀小學</span>
+      </div>
+      <nav class="flex-1 p-2">
+        <a href="#dashboard" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-base-200" data-page="dashboard">
+          <span>📊</span><span>總覽</span>
+        </a>
+        <a href="#ranking" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-base-200" data-page="ranking">
+          <span>🏆</span><span>學校排名</span>
+        </a>
+        <a href="#links" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-base-200" data-page="links">
+          <span>🔗</span><span>實用連結</span>
+        </a>
+        <a href="#account" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-base-200" data-page="account">
+          <span>👤</span><span>帳戶</span>
+        </a>
+      </nav>
+      <div class="p-3 border-t text-xs text-base-content/40">v2.0</div>
+    </aside>
+
+    <!-- Mobile top bar -->
+    <div class="md:hidden navbar bg-base-100 shadow-sm sticky top-0 z-40">
+      <div class="flex-1">
+        <span class="text-lg font-bold px-2">🏫 幫你揀小學</span>
+      </div>
+      <div class="flex-none">
+        <span id="school-count-mobile" class="text-xs text-base-content/50 px-2"></span>
+      </div>
+    </div>
+
+    <!-- Main content area -->
+    <main class="md:ml-56">
+
+      <!-- Page: Dashboard -->
+      <section id="page-dashboard" class="page-section hidden">
+        <div class="max-w-5xl mx-auto p-4">
+          <h2 class="text-xl font-bold mb-4">總覽</h2>
+          <div id="dashboard-cards" class="grid gap-4 md:grid-cols-2"></div>
+        </div>
+      </section>
+
+      <!-- Page: Ranking -->
+      <section id="page-ranking" class="page-section hidden">
+        <!-- Filter bar -->
+        <div class="bg-base-100 border-b p-4">
+          <div class="max-w-7xl mx-auto">
+            <button id="filter-toggle" class="btn btn-sm btn-outline md:hidden mb-2 w-full">篩選條件 ▼</button>
+            <div id="filter-panel" class="hidden md:block">
+              <div class="flex flex-wrap gap-4 items-end">
+                <div class="form-control w-full md:w-64">
+                  <label class="label"><span class="label-text">搜尋學校</span></label>
+                  <input type="text" id="filter-search" placeholder="學校名稱..." class="input input-bordered input-sm w-full">
+                </div>
+                <div class="form-control w-full md:w-48">
+                  <label class="label"><span class="label-text">地區</span></label>
+                  <div class="dropdown w-full" id="district-dropdown">
+                    <label tabindex="0" class="btn btn-sm btn-outline w-full justify-between">
+                      <span id="district-label">全部地區</span> ▼
+                    </label>
+                    <div tabindex="0" class="dropdown-content bg-base-100 shadow-lg rounded-box p-2 w-56 max-h-60 overflow-y-auto z-50">
+                      <div id="district-options"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-control w-full md:w-48">
+                  <label class="label"><span class="label-text">校網</span></label>
+                  <div class="dropdown w-full" id="net-dropdown">
+                    <label tabindex="0" class="btn btn-sm btn-outline w-full justify-between">
+                      <span id="net-label">全部校網</span> ▼
+                    </label>
+                    <div tabindex="0" class="dropdown-content bg-base-100 shadow-lg rounded-box p-2 w-56 max-h-60 overflow-y-auto z-50">
+                      <div id="net-options"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-control">
+                  <label class="label"><span class="label-text">性別</span></label>
+                  <div class="flex gap-2">
+                    <label class="label cursor-pointer gap-1">
+                      <input type="radio" name="gender" value="" class="radio radio-sm" checked>
+                      <span class="label-text">全部</span>
+                    </label>
+                    <label class="label cursor-pointer gap-1">
+                      <input type="radio" name="gender" value="男女校" class="radio radio-sm">
+                      <span class="label-text">男女校</span>
+                    </label>
+                    <label class="label cursor-pointer gap-1">
+                      <input type="radio" name="gender" value="男校" class="radio radio-sm">
+                      <span class="label-text">男校</span>
+                    </label>
+                    <label class="label cursor-pointer gap-1">
+                      <input type="radio" name="gender" value="女校" class="radio radio-sm">
+                      <span class="label-text">女校</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="form-control">
+                  <label class="label"><span class="label-text">評級</span></label>
+                  <div class="flex gap-2 flex-wrap">
+                    <label class="label cursor-pointer gap-1">
+                      <input type="checkbox" class="checkbox checkbox-sm rating-check" value="Top">
+                      <span class="label-text">Top</span>
+                    </label>
+                    <label class="label cursor-pointer gap-1">
+                      <input type="checkbox" class="checkbox checkbox-sm rating-check" value="High">
+                      <span class="label-text">High</span>
+                    </label>
+                    <label class="label cursor-pointer gap-1">
+                      <input type="checkbox" class="checkbox checkbox-sm rating-check" value="Medium">
+                      <span class="label-text">Medium</span>
+                    </label>
+                    <label class="label cursor-pointer gap-1">
+                      <input type="checkbox" class="checkbox checkbox-sm rating-check" value="Unrated">
+                      <span class="label-text">未評</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="form-control">
+                  <label class="label"><span class="label-text">排序</span></label>
+                  <select id="sort-by" class="select select-bordered select-sm">
+                    <option value="rank">排名</option>
+                    <option value="schoolNet">校網</option>
+                  </select>
+                </div>
+                <button id="clear-filters" class="btn btn-sm btn-ghost">清除篩選</button>
               </div>
             </div>
           </div>
-          <!-- School Net -->
-          <div class="form-control w-full md:w-48">
-            <label class="label"><span class="label-text">校網</span></label>
-            <div class="dropdown w-full" id="net-dropdown">
-              <label tabindex="0" class="btn btn-sm btn-outline w-full justify-between">
-                <span id="net-label">全部校網</span> ▼
-              </label>
-              <div tabindex="0" class="dropdown-content bg-base-100 shadow-lg rounded-box p-2 w-56 max-h-60 overflow-y-auto z-50">
-                <div id="net-options"></div>
+        </div>
+        <div class="max-w-7xl mx-auto p-4">
+          <div class="flex justify-end mb-2">
+            <span id="school-count" class="text-sm text-base-content/60"></span>
+          </div>
+          <div class="hidden md:block overflow-x-auto">
+            <table class="table table-zebra w-full" id="school-table">
+              <thead>
+                <tr>
+                  <th class="w-8"></th>
+                  <th>排名</th>
+                  <th>學校名稱</th>
+                  <th>性別</th>
+                  <th>地區 / 校網</th>
+                  <th>評級</th>
+                  <th>學費</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="school-tbody"></tbody>
+            </table>
+          </div>
+          <div class="md:hidden" id="school-cards"></div>
+        </div>
+      </section>
+
+      <!-- Page: Links -->
+      <section id="page-links" class="page-section hidden">
+        <div class="max-w-5xl mx-auto p-4">
+          <h2 class="text-xl font-bold mb-4">實用連結</h2>
+          <div class="grid gap-4 md:grid-cols-2">
+            <a href="https://www.chsc.hk/psp2025/index.php?lang_id=2" target="_blank" class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
+              <div class="card-body">
+                <h3 class="card-title text-base">小學概覽 2024/2025</h3>
+                <p class="text-sm text-base-content/60">家庭與學校合作事宜委員會 — 官方學校資料、校網劃分、收生詳情</p>
+                <div class="text-xs text-primary mt-1">chsc.hk</div>
               </div>
-            </div>
+            </a>
+            <a href="https://www.edb.gov.hk/tc/edu-system/primary-secondary/spa-systems/primary-1-admission/school-lists/index.html" target="_blank" class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
+              <div class="card-body">
+                <h3 class="card-title text-base">小一入學統籌辦法 — 學校名冊</h3>
+                <p class="text-sm text-base-content/60">教育局 — 各校網學校名單、自行分配及統一派位資料</p>
+                <div class="text-xs text-primary mt-1">edb.gov.hk</div>
+              </div>
+            </a>
           </div>
-          <!-- Gender -->
-          <div class="form-control">
-            <label class="label"><span class="label-text">性別</span></label>
-            <div class="flex gap-2">
-              <label class="label cursor-pointer gap-1">
-                <input type="radio" name="gender" value="" class="radio radio-sm" checked>
-                <span class="label-text">全部</span>
-              </label>
-              <label class="label cursor-pointer gap-1">
-                <input type="radio" name="gender" value="男女校" class="radio radio-sm">
-                <span class="label-text">男女校</span>
-              </label>
-              <label class="label cursor-pointer gap-1">
-                <input type="radio" name="gender" value="男校" class="radio radio-sm">
-                <span class="label-text">男校</span>
-              </label>
-            </div>
-          </div>
-          <!-- Rating -->
-          <div class="form-control">
-            <label class="label"><span class="label-text">評級</span></label>
-            <div class="flex gap-2 flex-wrap">
-              <label class="label cursor-pointer gap-1">
-                <input type="radio" name="rating" value="" class="radio radio-sm" checked>
-                <span class="label-text">全部</span>
-              </label>
-              <label class="label cursor-pointer gap-1">
-                <input type="radio" name="rating" value="Top" class="radio radio-sm">
-                <span class="label-text">Top</span>
-              </label>
-              <label class="label cursor-pointer gap-1">
-                <input type="radio" name="rating" value="High" class="radio radio-sm">
-                <span class="label-text">High</span>
-              </label>
-              <label class="label cursor-pointer gap-1">
-                <input type="radio" name="rating" value="Medium" class="radio radio-sm">
-                <span class="label-text">Medium</span>
-              </label>
-              <label class="label cursor-pointer gap-1">
-                <input type="radio" name="rating" value="Unrated" class="radio radio-sm">
-                <span class="label-text">未評</span>
-              </label>
-            </div>
-          </div>
-          <!-- Clear filters -->
-          <button id="clear-filters" class="btn btn-sm btn-ghost">清除篩選</button>
+        </div>
+      </section>
+
+      <!-- Page: Account -->
+      <section id="page-account" class="page-section hidden">
+        <div class="max-w-xl mx-auto p-4">
+          <h2 class="text-xl font-bold mb-4">帳戶</h2>
+          <div id="account-content"></div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Compare bar (fixed bottom, above mobile nav) -->
+    <div id="compare-bar" class="fixed left-0 right-0 bg-base-100 border-t shadow-lg p-3 z-30 hidden md:bottom-0" style="bottom: 4rem;">
+      <div class="max-w-7xl mx-auto md:ml-56 flex items-center justify-between">
+        <span id="compare-count" class="text-sm">已選擇 0 所學校</span>
+        <div class="flex gap-2">
+          <button id="compare-btn" class="btn btn-primary btn-sm" disabled>比較</button>
+          <button id="compare-clear" class="btn btn-ghost btn-sm">取消</button>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Main content -->
-  <div class="max-w-7xl mx-auto p-4">
-    <!-- Desktop table -->
-    <div class="hidden md:block overflow-x-auto">
-      <table class="table table-zebra w-full" id="school-table">
-        <thead>
-          <tr>
-            <th class="w-8"></th>
-            <th>排名</th>
-            <th>學校名稱</th>
-            <th>性別</th>
-            <th>地區 / 校網</th>
-            <th>評級</th>
-            <th>學費</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody id="school-tbody"></tbody>
-      </table>
-    </div>
+    <!-- Mobile bottom nav -->
+    <nav id="bottom-nav" class="md:hidden btm-nav btm-nav-sm z-40">
+      <a href="#dashboard" class="nav-item" data-page="dashboard">
+        <span class="text-lg">📊</span>
+        <span class="btm-nav-label text-xs">總覽</span>
+      </a>
+      <a href="#ranking" class="nav-item" data-page="ranking">
+        <span class="text-lg">🏆</span>
+        <span class="btm-nav-label text-xs">學校排名</span>
+      </a>
+      <a href="#links" class="nav-item" data-page="links">
+        <span class="text-lg">🔗</span>
+        <span class="btm-nav-label text-xs">實用連結</span>
+      </a>
+      <a href="#account" class="nav-item" data-page="account">
+        <span class="text-lg">👤</span>
+        <span class="btm-nav-label text-xs">帳戶</span>
+      </a>
+    </nav>
 
-    <!-- Mobile card list -->
-    <div class="md:hidden" id="school-cards"></div>
-  </div>
-
-  <!-- Compare bar (fixed bottom) -->
-  <div id="compare-bar" class="fixed bottom-0 left-0 right-0 bg-base-100 border-t shadow-lg p-3 z-50 hidden">
-    <div class="max-w-7xl mx-auto flex items-center justify-between">
-      <span id="compare-count" class="text-sm">已選擇 0 所學校</span>
-      <div class="flex gap-2">
-        <button id="compare-btn" class="btn btn-primary btn-sm" disabled>比較</button>
-        <button id="compare-clear" class="btn btn-ghost btn-sm">取消</button>
-      </div>
-    </div>
-  </div>
+  </div><!-- /app-container -->
 
   <!-- Compare modal -->
   <dialog id="compare-modal" class="modal">
@@ -157,7 +272,7 @@
     <form method="dialog" class="modal-backdrop"><button>close</button></form>
   </dialog>
 
-  <!-- Detail modal (mobile) -->
+  <!-- School detail modal (shared across all pages) -->
   <dialog id="detail-modal" class="modal">
     <div class="modal-box w-11/12 max-w-3xl">
       <form method="dialog">
@@ -168,6 +283,16 @@
     <form method="dialog" class="modal-backdrop"><button>close</button></form>
   </dialog>
 
-  <script src="app.js"></script>
+  <!-- Onboarding modal -->
+  <dialog id="onboarding-modal" class="modal">
+    <div class="modal-box w-11/12 max-w-lg">
+      <div id="onboarding-content"></div>
+    </div>
+  </dialog>
+
+  <script type="module">
+    import { initAuth } from './js/auth.js';
+    initAuth();
+  </script>
 </body>
 </html>
