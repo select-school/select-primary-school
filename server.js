@@ -11,7 +11,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 const schools = JSON.parse(fs.readFileSync(path.join(__dirname, 'schools.json'), 'utf-8'));
 const schoolNets = JSON.parse(fs.readFileSync(path.join(__dirname, 'school_nets.json'), 'utf-8'));
 
-const USER_DATA_PATH = path.join(__dirname, 'user_data.json');
+const DATA_DIR = process.env.DATA_DIR || __dirname;
+const USER_DATA_PATH = path.join(DATA_DIR, 'user_data.json');
 
 function loadUserData() {
   try {
