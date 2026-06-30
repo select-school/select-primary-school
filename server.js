@@ -27,46 +27,27 @@ function saveUserData(data) {
 }
 
 app.get('/api/schools', (req, res) => {
-  const userData = loadUserData();
-  const merged = schools.map(school => ({
-    ...school,
-    userData: userData[school.id] || null,
-  }));
-  res.json(merged);
+  res.json(schools);
 });
 
 app.get('/api/school-nets', (req, res) => {
   res.json(schoolNets);
 });
 
-app.put('/api/schools/:id/ranking', (req, res) => {
-  const { id } = req.params;
-  const { rating, ratingReason } = req.body;
-  if (!schools.find(s => s.id === id)) {
-    return res.status(404).json({ error: 'School not found' });
-  }
-  const valid = [null, 'Top', 'High', 'Medium'];
-  if (!valid.includes(rating)) {
-    return res.status(400).json({ error: 'Invalid rating. Must be Top, High, Medium, or null' });
-  }
-  const userData = loadUserData();
-  if (!userData[id]) userData[id] = {};
-  userData[id].rating = rating;
-  userData[id].ratingReason = ratingReason || '';
-  userData[id].updatedAt = new Date().toISOString();
-  saveUserData(userData);
-  res.json({ success: true });
+app.get('/api/user-data', (req, res) => {
+  res.json(loadUserData());
 });
 
-app.put('/api/schools/:id/notes', (req, res) => {
-  const { id } = req.params;
-  const { notes } = req.body;
-  if (!schools.find(s => s.id === id)) {
+app.put('/api/user-data', (req, res) => {
+  const { id, rating, ratingReason, notes } = req.body;
+  if (!id || !schools.find(s => s.id === id)) {
     return res.status(404).json({ error: 'School not found' });
   }
   const userData = loadUserData();
   if (!userData[id]) userData[id] = {};
-  userData[id].notes = notes || '';
+  if (rating !== undefined) userData[id].rating = rating;
+  if (ratingReason !== undefined) userData[id].ratingReason = ratingReason;
+  if (notes !== undefined) userData[id].notes = notes;
   userData[id].updatedAt = new Date().toISOString();
   saveUserData(userData);
   res.json({ success: true });
