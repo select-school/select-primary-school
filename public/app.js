@@ -1,7 +1,9 @@
 let allSchools = [];
 let schoolNets = {};
+let districtNetsMap = {}; // district → [netNumbers]
 let selectedForCompare = new Set();
 let expandedRow = null;
+let _syncingFilters = false;
 
 async function init() {
   try {
@@ -31,6 +33,12 @@ function populateFilterOptions() {
     districtContainer.appendChild(label);
   });
 
+  // Build reverse map: district → [netNumbers]
+  Object.entries(schoolNets).forEach(([net, district]) => {
+    if (!districtNetsMap[district]) districtNetsMap[district] = [];
+    districtNetsMap[district].push(Number(net));
+  });
+
   const nets = [...new Set(Object.keys(schoolNets).map(Number))].sort((a, b) => a - b);
   const netContainer = document.getElementById('net-options');
   nets.forEach(n => {
@@ -40,12 +48,40 @@ function populateFilterOptions() {
     netContainer.appendChild(label);
   });
 
-  districtContainer.addEventListener('change', () => {
+  // Bidirectional district ↔ net linking
+  districtContainer.addEventListener('change', (e) => {
+    if (_syncingFilters) return;
+    _syncingFilters = true;
+    const changedDistrict = e.target.value;
+    const isChecked = e.target.checked;
+    const netsForDistrict = districtNetsMap[changedDistrict] || [];
+    netsForDistrict.forEach(netNum => {
+      const netCb = document.querySelector(`.net-check[value="${netNum}"]`);
+      if (netCb) netCb.checked = isChecked;
+    });
     updateDropdownLabel('district');
+    updateDropdownLabel('net');
+    _syncingFilters = false;
     render();
   });
-  netContainer.addEventListener('change', () => {
+
+  netContainer.addEventListener('change', (e) => {
+    if (_syncingFilters) return;
+    _syncingFilters = true;
+    const changedNet = Number(e.target.value);
+    const district = schoolNets[String(changedNet)];
+    if (district) {
+      const netsForDistrict = districtNetsMap[district] || [];
+      const anyNetChecked = netsForDistrict.some(netNum => {
+        const netCb = document.querySelector(`.net-check[value="${netNum}"]`);
+        return netCb && netCb.checked;
+      });
+      const districtCb = document.querySelector(`.district-check[value="${district}"]`);
+      if (districtCb) districtCb.checked = anyNetChecked;
+    }
+    updateDropdownLabel('district');
     updateDropdownLabel('net');
+    _syncingFilters = false;
     render();
   });
 }
@@ -192,6 +228,7 @@ function renderTable(schools) {
     if (isExpanded) {
       const detailTr = document.createElement('tr');
       detailTr.innerHTML = `<td colspan="8" class="p-0"><div class="detail-panel">${renderDetailPanel(school)}</div></td>`;
+      setDetailPanelValues(detailTr, school);
       tbody.appendChild(detailTr);
     }
   });
@@ -245,8 +282,13 @@ function renderCards(schools) {
 
 function renderDetailPanel(school) {
   const ud = school.userData || {};
+  const hketUrl = `https://www.google.com/search?q=site:topschool.hket.com+${encodeURIComponent(school.name)}`;
   return `
     <div class="p-4 bg-base-200/50 space-y-4">
+      <div class="flex gap-2 mb-2">
+        <a href="${googleSearchUrl(school.name)}" target="_blank" class="btn btn-ghost btn-xs" onclick="event.stopPropagation()">🔍 Google 搜尋</a>
+        <a href="${hketUrl}" target="_blank" class="btn btn-ghost btn-xs" onclick="event.stopPropagation()">📰 HKET 詳情</a>
+      </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <h4 class="font-bold text-sm mb-2">學校資料</h4>
@@ -268,16 +310,24 @@ function renderDetailPanel(school) {
             <button class="btn btn-sm btn-outline" onclick="setRating('${school.id}', null)">清除</button>
           </div>
           <textarea class="textarea textarea-bordered w-full text-sm mb-1" rows="2" placeholder="評級原因..."
-            id="reason-${school.id}" onchange="saveRating('${school.id}')">${ud.ratingReason || ''}</textarea>
+            id="reason-${school.id}" onchange="saveRating('${school.id}')"></textarea>
 
           <h4 class="font-bold text-sm mb-2 mt-3">備註</h4>
           <textarea class="textarea textarea-bordered w-full text-sm" rows="3" placeholder="添加備註..."
-            id="notes-${school.id}">${ud.notes || ''}</textarea>
+            id="notes-${school.id}"></textarea>
           <button class="btn btn-sm btn-primary mt-1" onclick="saveNotes('${school.id}', this)">儲存備註</button>
         </div>
       </div>
     </div>
   `;
+}
+
+function setDetailPanelValues(container, school) {
+  const ud = school.userData || {};
+  const reasonEl = container.querySelector(`#reason-${school.id}`);
+  if (reasonEl) reasonEl.value = ud.ratingReason || '';
+  const notesEl = container.querySelector(`#notes-${school.id}`);
+  if (notesEl) notesEl.value = ud.notes || '';
 }
 
 function toggleExpand(id) {
@@ -292,6 +342,7 @@ function showDetailModal(school) {
     <p class="text-sm text-base-content/60 mb-4">#${school.rank} · ${school.gender} · ${school.district}</p>
     ${renderDetailPanel(school)}
   `;
+  setDetailPanelValues(content, school);
   document.getElementById('detail-modal').showModal();
 }
 
