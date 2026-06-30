@@ -29,6 +29,7 @@ function renderShortlistCard(container) {
 
   const top5 = rated.slice(0, 5);
   const card = createCard('我的心水學校', `${rated.length} 所已評級`);
+  const cardBody = card.querySelector('.card-body');
 
   const list = document.createElement('div');
   list.className = 'space-y-2';
@@ -49,7 +50,7 @@ function renderShortlistCard(container) {
     list.appendChild(row);
   });
 
-  card.appendChild(list);
+  cardBody.appendChild(list);
   container.appendChild(card);
 }
 
@@ -72,6 +73,7 @@ function renderRegionCard(container) {
 
   const top10 = filtered.slice(0, 10);
   const card = createCard('地區推薦', `${filtered.length} 所學校`);
+  const cardBody = card.querySelector('.card-body');
 
   const list = document.createElement('div');
   list.className = 'space-y-1';
@@ -103,7 +105,7 @@ function renderRegionCard(container) {
     list.appendChild(viewAll);
   }
 
-  card.appendChild(list);
+  cardBody.appendChild(list);
   container.appendChild(card);
 }
 
@@ -121,6 +123,7 @@ function renderTypeCard(container) {
 
   const top10 = filtered.slice(0, 10);
   const card = createCard('學校類型', `${filtered.length} 所 ${prefs.schoolTypes.join(' / ')}`);
+  const cardBody = card.querySelector('.card-body');
 
   const list = document.createElement('div');
   list.className = 'space-y-1';
@@ -149,7 +152,7 @@ function renderTypeCard(container) {
     list.appendChild(viewAll);
   }
 
-  card.appendChild(list);
+  cardBody.appendChild(list);
   container.appendChild(card);
 }
 
@@ -167,6 +170,7 @@ function renderDistrictChart(container) {
   const max = sorted[0]?.[1] || 1;
 
   const card = createCard('地區分佈', `${allSchools.length} 所學校，${Object.keys(counts).length} 個地區`);
+  const cardBody = card.querySelector('.card-body');
 
   const chart = document.createElement('div');
   chart.className = 'space-y-2';
@@ -185,7 +189,7 @@ function renderDistrictChart(container) {
     chart.appendChild(row);
   });
 
-  card.appendChild(chart);
+  cardBody.appendChild(chart);
   container.appendChild(card);
 }
 
@@ -211,6 +215,7 @@ function renderTuitionChart(container) {
   });
 
   const card = createCard('學費統計', '');
+  const cardBody = card.querySelector('.card-body');
 
   const maxRange = Math.max(...Object.values(ranges));
   const rangeChart = document.createElement('div');
@@ -228,14 +233,14 @@ function renderTuitionChart(container) {
     `;
     rangeChart.appendChild(row);
   });
-  card.appendChild(rangeChart);
+  cardBody.appendChild(rangeChart);
 
   const genderDiv = document.createElement('div');
   genderDiv.className = 'flex gap-4 text-sm text-base-content/60 pt-2 border-t';
   Object.entries(genderCounts).forEach(([gender, count]) => {
     genderDiv.innerHTML += `<span>${gender}: ${count}</span>`;
   });
-  card.appendChild(genderDiv);
+  cardBody.appendChild(genderDiv);
 
   container.appendChild(card);
 }
@@ -252,7 +257,7 @@ function createCard(title, subtitle) {
     </div>
   `;
   card.appendChild(body);
-  return body;
+  return card;
 }
 
 function createPlaceholderCard(title, message, linkHash) {

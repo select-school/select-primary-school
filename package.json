@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node server.js",
     "convert": "node convert_csv.js",
-    "build": "sed -i '' \"s|%%SUPABASE_URL%%|$SUPABASE_URL|g; s|%%SUPABASE_ANON_KEY%%|$SUPABASE_ANON_KEY|g\" public/index.html"
+    "build": "node -e \"const fs=require('fs');let h=fs.readFileSync('public/index.html','utf8');h=h.replace('%%SUPABASE_URL%%',process.env.SUPABASE_URL||'').replace('%%SUPABASE_ANON_KEY%%',process.env.SUPABASE_ANON_KEY||'');fs.writeFileSync('public/index.html',h)\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.0",

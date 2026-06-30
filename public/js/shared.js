@@ -102,7 +102,7 @@ export function showDetailModal(school) {
       <p><span class="font-medium">佔地面積：</span>${school.campusArea || '-'}</p>
       <p><span class="font-medium">課室數目：</span>${school.classroomCount || '-'}</p>
       <p><span class="font-medium">特別室：</span>${school.specialRooms || '-'}</p>
-      <p><span class="font-medium">學校設施：</span>${school.facilities || '-'}</p>
+      <p><span class="font-medium">學校設施：</span>${typeof school.facilities === 'string' ? school.facilities : (school.facilities?.otherFacilities || '-')}</p>
     </div>
   </div>`;
 

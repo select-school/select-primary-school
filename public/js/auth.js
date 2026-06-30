@@ -9,9 +9,10 @@ const SUPABASE_ANON_KEY = window.__SUPABASE_ANON_KEY || '';
 
 let supabase = null;
 let isLocalDev = false;
+let booted = false;
 
 export async function initAuth() {
-  isLocalDev = !SUPABASE_URL || location.hostname === 'localhost';
+  isLocalDev = !SUPABASE_URL || SUPABASE_URL.includes('%%') || location.hostname === 'localhost';
 
   if (isLocalDev) {
     await bootApp(null);
@@ -83,6 +84,8 @@ function hideLoginError() {
 }
 
 async function bootApp(session) {
+  if (booted) return;
+  booted = true;
   setAppState('session', session);
 
   document.getElementById('login-page').classList.add('hidden');
@@ -141,5 +144,7 @@ export function getSession() {
 export async function signOut() {
   if (supabase) {
     await supabase.auth.signOut();
+  } else {
+    location.reload();
   }
 }
