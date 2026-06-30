@@ -1,0 +1,57 @@
+.detail-panel {
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 2000px; }
+}
+
+.rating-btn {
+  transition: all 0.15s ease;
+}
+
+.rating-btn.active {
+  transform: scale(1.05);
+  font-weight: 700;
+}
+
+#filter-district, #filter-net {
+  appearance: auto;
+}
+
+/* Fix multi-select to look like dropdown when collapsed */
+select[multiple] {
+  overflow: hidden;
+}
+select[multiple]:focus {
+  overflow: auto;
+  position: absolute;
+  z-index: 100;
+  min-height: 200px;
+}
+
+/* Mobile card tap area */
+.school-card {
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+.school-card:active {
+  box-shadow: 0 0 0 2px oklch(var(--p));
+}
+
+/* Compare highlight */
+tr.selected-for-compare {
+  background-color: oklch(var(--p) / 0.08) !important;
+}
+
+.compare-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .compare-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}
