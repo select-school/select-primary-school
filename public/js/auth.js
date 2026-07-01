@@ -168,6 +168,8 @@ function updateAuthUI(session) {
   const sidebarEmail = document.getElementById('sidebar-email');
   const mobileLogin = document.getElementById('mobile-login-btn');
   const mobileLogout = document.getElementById('mobile-logout-btn');
+  const mobileLoginLi = document.getElementById('mobile-login-li');
+  const mobileLogoutLi = document.getElementById('mobile-logout-li');
 
   if (session) {
     const email = session.user?.email || session.user?.user_metadata?.full_name || '';
@@ -178,11 +180,15 @@ function updateAuthUI(session) {
     }
     if (mobileLogin) mobileLogin.classList.add('hidden');
     if (mobileLogout) mobileLogout.classList.remove('hidden');
+    if (mobileLoginLi) mobileLoginLi.classList.add('hidden');
+    if (mobileLogoutLi) mobileLogoutLi.classList.remove('hidden');
   } else {
     if (sidebarAuth) sidebarAuth.classList.remove('hidden');
     if (sidebarUser) sidebarUser.classList.add('hidden');
     if (mobileLogin) mobileLogin.classList.remove('hidden');
     if (mobileLogout) mobileLogout.classList.add('hidden');
+    if (mobileLoginLi) mobileLoginLi.classList.remove('hidden');
+    if (mobileLogoutLi) mobileLogoutLi.classList.add('hidden');
   }
 
   document.getElementById('sidebar-login-btn')?.addEventListener('click', showLoginModal);

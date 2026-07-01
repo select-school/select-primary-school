@@ -56,8 +56,41 @@
       </div>
       <div class="flex-none flex items-center">
         <span id="school-count-mobile" class="text-xs text-base-content/50 px-2"></span>
-        <button id="mobile-login-btn" class="btn btn-ghost btn-xs">登入</button>
-        <button id="mobile-logout-btn" class="btn btn-ghost btn-xs hidden">登出</button>
+        <details class="dropdown dropdown-end">
+          <summary class="btn btn-ghost btn-square btn-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </summary>
+          <ul class="dropdown-content menu bg-base-100 rounded-box shadow-lg w-52 z-50 mt-2 p-2">
+            <li>
+              <a href="#dashboard" class="nav-item" data-page="dashboard">
+                <span>📊</span> 總覽
+              </a>
+            </li>
+            <li>
+              <a href="#ranking" class="nav-item" data-page="ranking">
+                <span>🏆</span> 學校排名
+              </a>
+            </li>
+            <li>
+              <a href="#links" class="nav-item" data-page="links">
+                <span>🔗</span> 實用連結
+              </a>
+            </li>
+            <li>
+              <a href="#account" class="nav-item" data-page="account">
+                <span>👤</span> 帳戶
+              </a>
+            </li>
+            <li id="mobile-login-li" class="border-t mt-1 pt-1">
+              <button id="mobile-login-btn">登入</button>
+            </li>
+            <li id="mobile-logout-li" class="border-t mt-1 pt-1 hidden">
+              <button id="mobile-logout-btn">登出</button>
+            </li>
+          </ul>
+        </details>
       </div>
     </div>
 
@@ -215,7 +248,7 @@
     </main>
 
     <!-- Compare bar (fixed bottom, above mobile nav) -->
-    <div id="compare-bar" class="fixed left-0 right-0 bg-base-100 border-t shadow-lg p-3 z-30 hidden md:bottom-0" style="bottom: 4rem;">
+    <div id="compare-bar" class="fixed left-0 right-0 bottom-0 bg-base-100 border-t shadow-lg p-3 z-30 hidden">
       <div class="max-w-7xl mx-auto md:ml-56 flex items-center justify-between">
         <span id="compare-count" class="text-sm">已選擇 0 所學校</span>
         <div class="flex gap-2">
@@ -225,25 +258,6 @@
       </div>
     </div>
 
-    <!-- Mobile bottom nav -->
-    <nav id="bottom-nav" class="md:hidden btm-nav btm-nav-sm z-40">
-      <a href="#dashboard" class="nav-item" data-page="dashboard">
-        <span class="text-lg">📊</span>
-        <span class="btm-nav-label text-xs">總覽</span>
-      </a>
-      <a href="#ranking" class="nav-item" data-page="ranking">
-        <span class="text-lg">🏆</span>
-        <span class="btm-nav-label text-xs">學校排名</span>
-      </a>
-      <a href="#links" class="nav-item" data-page="links">
-        <span class="text-lg">🔗</span>
-        <span class="btm-nav-label text-xs">實用連結</span>
-      </a>
-      <a href="#account" class="nav-item" data-page="account">
-        <span class="text-lg">👤</span>
-        <span class="btm-nav-label text-xs">帳戶</span>
-      </a>
-    </nav>
 
   </div><!-- /app-container -->
 
@@ -304,6 +318,11 @@
 
   <script type="module">
     import { initAuth } from './js/auth.js';
+
+    document.querySelectorAll('.dropdown-content .nav-item').forEach(link => {
+      link.addEventListener('click', () => link.closest('details')?.removeAttribute('open'));
+    });
+
     initAuth();
   </script>
 </body>

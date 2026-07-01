@@ -36,25 +36,9 @@ tr.selected-for-compare {
   font-weight: 600;
 }
 
-/* Bottom nav active state */
-#bottom-nav .nav-item.active {
-  --tw-text-opacity: 1;
-  color: oklch(var(--p) / var(--tw-text-opacity));
-  border-top-color: oklch(var(--p));
-  border-top-width: 2px;
-}
-
-/* Page content padding for mobile bottom nav */
-@media (max-width: 767px) {
-  main {
-    padding-bottom: 4rem;
-  }
-}
-
-/* Compare bar position: above bottom nav on mobile, at bottom on desktop */
-@media (min-width: 768px) {
-  #compare-bar {
-    bottom: 0 !important;
-  }
+/* Hamburger menu active state */
+.dropdown-content .nav-item.active {
+  background-color: oklch(var(--p) / 0.1);
+  font-weight: 600;
 }
 
