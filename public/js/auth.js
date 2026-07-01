@@ -1,6 +1,6 @@
 import { setAppState, getAppState, fetchSchools, fetchSchoolNets, fetchUserData, buildDistrictNetsMap } from './shared.js';
-import { initRouter, navigateTo } from './router.js';
-import { initRanking, refreshRanking } from './ranking.js';
+import { initRouter, navigateTo, getCurrentPage } from './router.js';
+import { initRanking, refreshRanking, updateSchoolRating } from './ranking.js';
 import { initDashboard } from './dashboard.js';
 import { initAccount } from './account.js';
 
@@ -90,13 +90,31 @@ async function bootApp(session) {
     if (userData[s.id]) s.userData = userData[s.id];
   });
 
+  let dashboardDirty = false;
+
+  window.__onRatingChange = (schoolId) => {
+    updateSchoolRating(schoolId);
+    if (getCurrentPage() === 'dashboard') {
+      initDashboard();
+    } else {
+      dashboardDirty = true;
+    }
+  };
+
   window.__onDataChange = () => {
     refreshRanking();
-    initDashboard();
+    if (getCurrentPage() === 'dashboard') {
+      initDashboard();
+    } else {
+      dashboardDirty = true;
+    }
   };
 
   initRouter((page) => {
-    if (page === 'dashboard') initDashboard();
+    if (page === 'dashboard') {
+      if (dashboardDirty) initDashboard();
+      dashboardDirty = false;
+    }
     if (page === 'account') initAccount(getAppState('session'), supabase);
   });
 

@@ -304,27 +304,50 @@ export function showDetailModal(school) {
   document.getElementById('detail-modal').showModal();
 }
 
+function updateModalRatingButtons(id, rating) {
+  const modal = document.getElementById('detail-modal-content');
+  if (!modal) return;
+  const buttons = modal.querySelectorAll('.rating-btn');
+  const styles = { Top: 'btn-success', High: 'btn-warning', Medium: 'btn-ghost' };
+  buttons.forEach(btn => {
+    const text = btn.textContent.trim();
+    const isActive = text === rating;
+    btn.className = `btn btn-sm rating-btn ${isActive ? (styles[text] || 'btn-outline') + ' active' : 'btn-outline'}`;
+  });
+}
+
 window.__setRating = async function(id, rating) {
   const { requireAuth } = await import('./auth.js');
-  requireAuth(async () => {
+  requireAuth(() => {
     const reason = document.getElementById(`reason-${id}`)?.value || '';
-    await saveRating(id, rating, reason);
     const school = state.allSchools.find(s => s.id === id);
+    const prevRating = school?.userData?.rating;
+    const prevReason = school?.userData?.ratingReason;
+
     if (school) {
       if (!school.userData) school.userData = {};
       school.userData.rating = rating;
       school.userData.ratingReason = reason;
     }
-    showDetailModal(school);
-    if (window.__onDataChange) window.__onDataChange();
+
+    updateModalRatingButtons(id, rating);
+    if (window.__onRatingChange) window.__onRatingChange(id);
+
+    saveRating(id, rating, reason).catch(() => {
+      if (school) {
+        school.userData.rating = prevRating;
+        school.userData.ratingReason = prevReason;
+      }
+      updateModalRatingButtons(id, prevRating);
+      if (window.__onRatingChange) window.__onRatingChange(id);
+    });
   });
 };
 
 window.__saveNotes = async function(id, btn) {
   const { requireAuth } = await import('./auth.js');
-  requireAuth(async () => {
+  requireAuth(() => {
     const notes = document.getElementById(`notes-${id}`)?.value || '';
-    await saveNotes(id, notes);
     const school = state.allSchools.find(s => s.id === id);
     if (school) {
       if (!school.userData) school.userData = {};
@@ -334,5 +357,8 @@ window.__saveNotes = async function(id, btn) {
       btn.textContent = '已儲存 ✓';
       setTimeout(() => btn.textContent = '儲存備註', 1500);
     }
+    saveNotes(id, notes).catch(() => {
+      if (btn) btn.textContent = '儲存失敗';
+    });
   });
 };

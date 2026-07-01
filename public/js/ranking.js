@@ -18,6 +18,26 @@ export function refreshRanking() {
   render();
 }
 
+export function updateSchoolRating(schoolId) {
+  const allSchools = getAppState('allSchools');
+  const school = allSchools.find(s => s.id === schoolId);
+  if (!school) return;
+  const rating = school.userData?.rating || null;
+  const badge = ratingBadge(rating);
+
+  const tr = document.querySelector(`tr[data-school-id="${schoolId}"]`);
+  if (tr) {
+    const ratingTd = tr.querySelector('.rating-cell');
+    if (ratingTd) ratingTd.innerHTML = badge;
+  }
+
+  const card = document.querySelector(`.school-card[data-school-id="${schoolId}"]`);
+  if (card) {
+    const ratingEl = card.querySelector('.rating-cell');
+    if (ratingEl) ratingEl.innerHTML = badge;
+  }
+}
+
 export function applyRankingFilters(overrides) {
   if (overrides.districts) {
     document.querySelectorAll('.district-check').forEach(cb => {
@@ -142,8 +162,12 @@ function applyFilters() {
   });
 }
 
+let _searchTimer;
 function bindFilterEvents() {
-  document.getElementById('filter-search').addEventListener('input', render);
+  document.getElementById('filter-search').addEventListener('input', () => {
+    clearTimeout(_searchTimer);
+    _searchTimer = setTimeout(render, 200);
+  });
   document.querySelectorAll('.gender-check').forEach(cb => cb.addEventListener('change', render));
   document.querySelectorAll('.rating-check').forEach(cb => cb.addEventListener('change', render));
   document.getElementById('sort-by').addEventListener('change', render);
@@ -189,8 +213,11 @@ function render() {
   const mobileCountEl = document.getElementById('school-count-mobile');
   if (mobileCountEl) mobileCountEl.textContent = `${filtered.length} / ${allSchools.length}`;
 
-  renderTable(filtered);
-  renderCards(filtered);
+  if (window.innerWidth >= 768) {
+    renderTable(filtered);
+  } else {
+    renderCards(filtered);
+  }
   updateCompareBar();
 }
 
@@ -205,6 +232,7 @@ function renderTable(schools) {
     const nets = (school.schoolNet || []).join(', ');
 
     const tr = document.createElement('tr');
+    tr.dataset.schoolId = school.id;
     tr.className = isSelected ? 'selected-for-compare cursor-pointer hover' : 'cursor-pointer hover';
     tr.innerHTML = `
       <td><input type="checkbox" class="checkbox checkbox-sm compare-check" data-id="${school.id}" ${isSelected ? 'checked' : ''}></td>
@@ -212,7 +240,7 @@ function renderTable(schools) {
       <td class="font-medium">${school.name}</td>
       <td>${school.gender}</td>
       <td>${school.district}<br><span class="text-xs text-base-content/50">校網 ${nets}</span></td>
-      <td>${ratingBadge(rating)}</td>
+      <td class="rating-cell">${ratingBadge(rating)}</td>
       <td class="text-sm">${school.tuition}</td>
       <td>
         <a href="${googleSearchUrl(school.name)}" target="_blank" class="btn btn-ghost btn-xs" title="Google 搜尋" onclick="event.stopPropagation()">🔍</a>
@@ -254,6 +282,7 @@ function renderCards(schools) {
 
     const card = document.createElement('div');
     card.className = `card bg-base-100 shadow-sm mb-3 school-card ${isSelected ? 'ring-2 ring-primary' : ''}`;
+    card.dataset.schoolId = school.id;
     card.innerHTML = `
       <div class="card-body p-4">
         <div class="flex items-start justify-between">
@@ -262,7 +291,7 @@ function renderCards(schools) {
             <span class="font-mono text-base-content/50">#${school.rank}</span>
           </div>
           <div class="flex gap-1">
-            ${ratingBadge(rating)}
+            <span class="rating-cell">${ratingBadge(rating)}</span>
             <a href="${googleSearchUrl(school.name)}" target="_blank" class="btn btn-ghost btn-xs" onclick="event.stopPropagation()">🔍</a>
           </div>
         </div>

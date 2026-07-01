@@ -1,14 +1,19 @@
 {
   "name": "select-school",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "private": true,
   "scripts": {
     "start": "node server.js",
     "convert": "node convert_csv.js",
-    "build": "node -e \"const fs=require('fs');let h=fs.readFileSync('public/index.html','utf8');h=h.replace('%%SUPABASE_URL%%',process.env.SUPABASE_URL||'').replace('%%SUPABASE_ANON_KEY%%',process.env.SUPABASE_ANON_KEY||'');fs.writeFileSync('public/index.html',h)\""
+    "build:css": "npx tailwindcss -i tailwind-input.css -o public/tailwind.css --minify",
+    "build": "npm run build:css && node -e \"const fs=require('fs');let h=fs.readFileSync('public/index.html','utf8');h=h.replace('%%SUPABASE_URL%%',process.env.SUPABASE_URL||'').replace('%%SUPABASE_ANON_KEY%%',process.env.SUPABASE_ANON_KEY||'');fs.writeFileSync('public/index.html',h)\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.0",
     "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "daisyui": "^4.12.22",
+    "tailwindcss": "^3.4.19"
   }
 }
