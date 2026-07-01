@@ -1,14 +1,8 @@
-const { Redis } = require('@upstash/redis');
 const { createClient } = require('@supabase/supabase-js');
-
-const redis = new Redis({
-  url: process.env.KV_REST_API_URL,
-  token: process.env.KV_REST_API_TOKEN,
-});
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 async function getUserId(req) {
@@ -20,4 +14,4 @@ async function getUserId(req) {
   return user.id;
 }
 
-module.exports = { redis, getUserId };
+module.exports = { supabase, getUserId };

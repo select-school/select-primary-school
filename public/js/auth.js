@@ -52,7 +52,10 @@ export function requireAuth(callback) {
 
 function bindLoginEvents() {
   document.getElementById('google-login-btn').onclick = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin },
+    });
     if (error) showLoginError(error.message);
   };
 
