@@ -247,7 +247,7 @@ export function showDetailModal(school) {
     const fac = school.facilities;
     campusHtml += `<div class="space-y-1 mb-3">`;
     campusHtml += `<h5 class="font-medium text-xs text-base-content/50 uppercase mb-1">設施</h5>`;
-    campusHtml += `<p><span class="font-medium">課室：</span>${fac.classrooms}間 · 操場：${fac.playgrounds}個 · 禮堂：${fac.halls}個 · 圖書館：${fac.libraries}個</p>`;
+    campusHtml += `<p><span class="font-medium">課室：</span>${fac.classrooms ?? '-'}間 · 操場：${fac.playgrounds ?? '-'}個 · 禮堂：${fac.halls ?? '-'}個 · 圖書館：${fac.libraries ?? '-'}個</p>`;
     if (school.campusArea) campusHtml += `<p><span class="font-medium">佔地面積：</span>${school.campusArea}</p>`;
     if (fac.specialRooms) campusHtml += `<p><span class="font-medium">特別室：</span>${fac.specialRooms}</p>`;
     if (fac.otherFacilities) campusHtml += `<p><span class="font-medium">其他設施：</span>${fac.otherFacilities}</p>`;
