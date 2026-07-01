@@ -12,10 +12,24 @@ import sys
 import pdfplumber
 
 PDF_FILES = {
-    "南區": "school-details/南區.pdf",
     "中西區": "school-details/中西區.pdf",
-    "灣仔區": "school-details/灣仔區.pdf",
     "九龍城區": "school-details/九龍城區.pdf",
+    "元朗區": "school-details/元朗區.pdf",
+    "北區": "school-details/北區.pdf",
+    "南區": "school-details/香港南區.pdf",
+    "大埔區": "school-details/大埔區.pdf",
+    "屯門區": "school-details/屯門區.pdf",
+    "東區": "school-details/香港東區.pdf",
+    "沙田區": "school-details/沙田區.pdf",
+    "油尖旺區": "school-details/油尖旺區.pdf",
+    "深水埗區": "school-details/深水埗區.pdf",
+    "灣仔區": "school-details/灣仔區.pdf",
+    "荃灣區": "school-details/荃灣區.pdf",
+    "葵青區": "school-details/葵青區.pdf",
+    "西貢區": "school-details/西貢區.pdf",
+    "觀塘區": "school-details/觀塘區.pdf",
+    "黃大仙區": "school-details/黃大仙區.pdf",
+    "離島區": "school-details/離島區.pdf",
 }
 
 # Name mappings for schools whose PDF names differ from schools.json
@@ -23,14 +37,14 @@ NAME_ALIASES = {
     "軒尼詩道官立小學": "軒尼詩道官立小學（灣仔）",
     "高主教書院小學部": "高主教書院（小學部）",
     "香港真光中學附屬小學暨幼稚園": "香港真光中學（小學部）",
+    "德望小學暨幼稚園": "德望小學暨幼稚園（小學部）",
 }
 
 
 def load_targets():
     with open("schools.json", encoding="utf-8") as f:
         schools = json.load(f)
-    target_districts = set(PDF_FILES.keys())
-    return {s["name"]: s for s in schools if s["district"] in target_districts}
+    return {s["name"]: s for s in schools}
 
 
 def parse_int(s):
@@ -594,11 +608,18 @@ def main():
         try:
             with pdfplumber.open(pdf_path) as pdf:
                 total_pages = len(pdf.pages)
-                print(f"  {total_pages} pages ({total_pages // 2} schools)")
+                print(f"  {total_pages} pages")
 
-                for page_idx in range(0, total_pages, 2):
+                # Scan all pages to find school data pages (not assuming even alignment)
+                for page_idx in range(total_pages):
                     text = pdf.pages[page_idx].extract_text() or ""
-                    school_name = text.split("\n")[0].strip()
+                    first_line = text.split("\n")[0].strip()
+
+                    # Skip narrative pages (start with 全方位學習)
+                    if first_line == "全方位學習":
+                        continue
+
+                    school_name = first_line
 
                     # Check if this school is in our target list
                     json_name = target_lookup.get(school_name)

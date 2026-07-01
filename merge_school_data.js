@@ -25,7 +25,12 @@ let enrichedCount = 0;
 
 const merged = existingSchools.map(school => {
   const detail = detailsByName[school.name];
-  if (!detail) return school;
+  if (!detail) {
+    // Standardize gender even for non-enriched schools
+    if (school.gender === '男') school.gender = '男校';
+    else if (school.gender === '男女') school.gender = '男女校';
+    return school;
+  }
 
   enrichedCount++;
 
@@ -39,8 +44,12 @@ const merged = existingSchools.map(school => {
   enriched.district = school.district;
   enriched.schoolNet = school.schoolNet; // array from original data
 
-  // Keep the existing simple fields for backward compatibility
-  enriched.gender = detail.gender || school.gender;
+  // Standardize and keep gender
+  const rawGender = detail.gender || school.gender;
+  if (rawGender === '男' || rawGender === '男校') enriched.gender = '男校';
+  else if (rawGender === '男女' || rawGender === '男女校') enriched.gender = '男女校';
+  else if (rawGender === '女' || rawGender === '女校') enriched.gender = '女校';
+  else enriched.gender = rawGender;
   enriched.tuition = school.tuition;
   enriched.campusArea = detail.campusArea || school.campusArea;
   enriched.classroomCount = detail.facilities?.classrooms || school.classroomCount;
