@@ -41,7 +41,7 @@
           <p id="sidebar-email" class="text-xs text-base-content/60 truncate"></p>
           <button id="sidebar-logout-btn" class="btn btn-ghost btn-xs mt-1">登出</button>
         </div>
-        <div class="text-xs text-base-content/40 mt-2">v2.0.1</div>
+        <div class="text-xs text-base-content/40 mt-2">v2.0.2</div>
       </div>
     </aside>
 
@@ -281,16 +281,6 @@
         <p class="text-sm text-base-content/60 mt-1">登入以評級學校、儲存備註和設定偏好</p>
         <div class="w-full mt-6 space-y-3">
           <button id="google-login-btn" class="btn btn-primary w-full">使用 Google 登入</button>
-          <div class="divider text-xs">或</div>
-          <div id="email-login-form">
-            <input type="email" id="login-email" placeholder="電郵地址" class="input input-bordered w-full mb-2">
-            <button id="email-otp-btn" class="btn btn-outline w-full">發送驗證碼</button>
-          </div>
-          <div id="otp-verify-form" class="hidden">
-            <input type="text" id="otp-code" placeholder="輸入驗證碼" class="input input-bordered w-full mb-2" maxlength="6">
-            <button id="otp-verify-btn" class="btn btn-primary w-full">驗證</button>
-            <button id="otp-back-btn" class="btn btn-ghost btn-sm w-full mt-1">返回</button>
-          </div>
         </div>
         <p id="login-error" class="text-error text-sm mt-2 hidden"></p>
       </div>

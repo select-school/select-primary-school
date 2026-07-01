@@ -35,8 +35,6 @@ export async function initAuth() {
 }
 
 export function showLoginModal() {
-  document.getElementById('email-login-form')?.classList.remove('hidden');
-  document.getElementById('otp-verify-form')?.classList.add('hidden');
   document.getElementById('login-error')?.classList.add('hidden');
   document.getElementById('login-modal').showModal();
 }
@@ -58,29 +56,6 @@ function bindLoginEvents() {
     });
     if (error) showLoginError(error.message);
   };
-
-  document.getElementById('email-otp-btn').onclick = async () => {
-    const email = document.getElementById('login-email').value.trim();
-    if (!email) return showLoginError('請輸入電郵地址');
-    const { error } = await supabase.auth.signInWithOtp({ email });
-    if (error) return showLoginError(error.message);
-    document.getElementById('email-login-form').classList.add('hidden');
-    document.getElementById('otp-verify-form').classList.remove('hidden');
-  };
-
-  document.getElementById('otp-verify-btn').onclick = async () => {
-    const email = document.getElementById('login-email').value.trim();
-    const token = document.getElementById('otp-code').value.trim();
-    if (!token) return showLoginError('請輸入驗證碼');
-    const { error } = await supabase.auth.verifyOtp({ email, token, type: 'email' });
-    if (error) showLoginError(error.message);
-  };
-
-  document.getElementById('otp-back-btn').onclick = () => {
-    document.getElementById('email-login-form').classList.remove('hidden');
-    document.getElementById('otp-verify-form').classList.add('hidden');
-    hideLoginError();
-  };
 }
 
 function showLoginError(msg) {
@@ -89,9 +64,6 @@ function showLoginError(msg) {
   el.classList.remove('hidden');
 }
 
-function hideLoginError() {
-  document.getElementById('login-error').classList.add('hidden');
-}
 
 async function bootApp(session) {
   if (booted) return;
