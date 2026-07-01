@@ -5,6 +5,23 @@ export function initAccount(session, supabase) {
   const container = document.getElementById('account-content');
   if (!container) return;
 
+  if (!session) {
+    container.innerHTML = `
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body p-6 items-center text-center">
+          <h3 class="text-lg font-bold">登入帳戶</h3>
+          <p class="text-sm text-base-content/60 mt-2">登入以儲存你的學校評級、備註和偏好設定</p>
+          <button id="account-login-btn" class="btn btn-primary mt-4">登入 / 註冊</button>
+        </div>
+      </div>
+    `;
+    container.querySelector('#account-login-btn').addEventListener('click', async () => {
+      const { showLoginModal } = await import('./auth.js');
+      showLoginModal();
+    });
+    return;
+  }
+
   const prefs = getAppState('preferences');
   const schoolNets = getAppState('schoolNets');
   const districtNetsMap = getAppState('districtNetsMap');

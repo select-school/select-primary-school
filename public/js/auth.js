@@ -1,4 +1,4 @@
-import { setAppState, fetchSchools, fetchSchoolNets, fetchUserData, buildDistrictNetsMap } from './shared.js';
+import { setAppState, getAppState, fetchSchools, fetchSchoolNets, fetchUserData, buildDistrictNetsMap } from './shared.js';
 import { initRouter, navigateTo } from './router.js';
 import { initRanking, refreshRanking } from './ranking.js';
 import { initDashboard } from './dashboard.js';
@@ -10,6 +10,7 @@ const SUPABASE_ANON_KEY = window.__SUPABASE_ANON_KEY || '';
 let supabase = null;
 let isLocalDev = false;
 let booted = false;
+let pendingAuthCallback = null;
 
 export async function initAuth() {
   isLocalDev = !SUPABASE_URL || SUPABASE_URL.includes('%%') || location.hostname === 'localhost';
@@ -22,25 +23,31 @@ export async function initAuth() {
   supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   const { data: { session } } = await supabase.auth.getSession();
-  if (session) {
-    await bootApp(session);
-  } else {
-    showLoginPage();
-  }
+  await bootApp(session);
 
   supabase.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' && session) {
-      await bootApp(session);
+    if (event === 'SIGNED_IN' && session && booted) {
+      await onLogin(session);
     } else if (event === 'SIGNED_OUT') {
-      showLoginPage();
+      onLogout();
     }
   });
 }
 
-function showLoginPage() {
-  document.getElementById('login-page').classList.remove('hidden');
-  document.getElementById('app-container').classList.add('hidden');
-  bindLoginEvents();
+export function showLoginModal() {
+  document.getElementById('email-login-form')?.classList.remove('hidden');
+  document.getElementById('otp-verify-form')?.classList.add('hidden');
+  document.getElementById('login-error')?.classList.add('hidden');
+  document.getElementById('login-modal').showModal();
+}
+
+export function requireAuth(callback) {
+  if (getAppState('session') || isLocalDev) {
+    callback();
+    return;
+  }
+  pendingAuthCallback = callback;
+  showLoginModal();
 }
 
 function bindLoginEvents() {
@@ -88,13 +95,11 @@ async function bootApp(session) {
   booted = true;
   setAppState('session', session);
 
-  document.getElementById('login-page').classList.add('hidden');
-  document.getElementById('app-container').classList.remove('hidden');
-
+  const hasAuth = isLocalDev || session;
   const [schools, nets, userData] = await Promise.all([
     fetchSchools(),
     fetchSchoolNets(),
-    isLocalDev ? loadLocalUserData() : fetchUserData(),
+    hasAuth ? (isLocalDev ? loadLocalUserData() : fetchUserData()) : Promise.resolve({}),
   ]);
 
   setAppState('allSchools', schools);
@@ -117,15 +122,93 @@ async function bootApp(session) {
 
   initRouter((page) => {
     if (page === 'dashboard') initDashboard();
-    if (page === 'account') initAccount(session, supabase);
+    if (page === 'account') initAccount(getAppState('session'), supabase);
   });
 
   initRanking();
+  updateAuthUI(session);
 
-  if (!preferences.onboardingCompleted && !isLocalDev) {
+  if (!isLocalDev) {
+    bindLoginEvents();
+  }
+
+  if (session && !preferences.onboardingCompleted && !isLocalDev) {
     const { showOnboarding } = await import('./onboarding.js');
     showOnboarding();
   }
+}
+
+async function onLogin(session) {
+  setAppState('session', session);
+
+  const userData = await fetchUserData();
+  const preferences = userData._preferences || {};
+  delete userData._preferences;
+  setAppState('preferences', preferences);
+  setAppState('userData', userData);
+
+  const allSchools = getAppState('allSchools');
+  allSchools.forEach(s => {
+    if (userData[s.id]) s.userData = userData[s.id];
+    else delete s.userData;
+  });
+
+  updateAuthUI(session);
+  if (window.__onDataChange) window.__onDataChange();
+
+  document.getElementById('login-modal').close();
+
+  if (pendingAuthCallback) {
+    const cb = pendingAuthCallback;
+    pendingAuthCallback = null;
+    cb();
+  }
+
+  if (!preferences.onboardingCompleted) {
+    const { showOnboarding } = await import('./onboarding.js');
+    showOnboarding();
+  }
+}
+
+function onLogout() {
+  setAppState('session', null);
+  setAppState('userData', {});
+  setAppState('preferences', {});
+
+  const allSchools = getAppState('allSchools');
+  allSchools.forEach(s => { delete s.userData; });
+
+  updateAuthUI(null);
+  if (window.__onDataChange) window.__onDataChange();
+}
+
+function updateAuthUI(session) {
+  const sidebarAuth = document.getElementById('sidebar-auth');
+  const sidebarUser = document.getElementById('sidebar-user');
+  const sidebarEmail = document.getElementById('sidebar-email');
+  const mobileLogin = document.getElementById('mobile-login-btn');
+  const mobileLogout = document.getElementById('mobile-logout-btn');
+
+  if (session) {
+    const email = session.user?.email || session.user?.user_metadata?.full_name || '';
+    if (sidebarAuth) sidebarAuth.classList.add('hidden');
+    if (sidebarUser) {
+      sidebarUser.classList.remove('hidden');
+      sidebarEmail.textContent = email;
+    }
+    if (mobileLogin) mobileLogin.classList.add('hidden');
+    if (mobileLogout) mobileLogout.classList.remove('hidden');
+  } else {
+    if (sidebarAuth) sidebarAuth.classList.remove('hidden');
+    if (sidebarUser) sidebarUser.classList.add('hidden');
+    if (mobileLogin) mobileLogin.classList.remove('hidden');
+    if (mobileLogout) mobileLogout.classList.add('hidden');
+  }
+
+  document.getElementById('sidebar-login-btn')?.addEventListener('click', showLoginModal);
+  document.getElementById('mobile-login-btn')?.addEventListener('click', showLoginModal);
+  document.getElementById('sidebar-logout-btn')?.addEventListener('click', () => signOut());
+  document.getElementById('mobile-logout-btn')?.addEventListener('click', () => signOut());
 }
 
 async function loadLocalUserData() {

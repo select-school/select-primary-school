@@ -254,28 +254,34 @@ export function showDetailModal(school) {
 }
 
 window.__setRating = async function(id, rating) {
-  const reason = document.getElementById(`reason-${id}`)?.value || '';
-  await saveRating(id, rating, reason);
-  const school = state.allSchools.find(s => s.id === id);
-  if (school) {
-    if (!school.userData) school.userData = {};
-    school.userData.rating = rating;
-    school.userData.ratingReason = reason;
-  }
-  showDetailModal(school);
-  if (window.__onDataChange) window.__onDataChange();
+  const { requireAuth } = await import('./auth.js');
+  requireAuth(async () => {
+    const reason = document.getElementById(`reason-${id}`)?.value || '';
+    await saveRating(id, rating, reason);
+    const school = state.allSchools.find(s => s.id === id);
+    if (school) {
+      if (!school.userData) school.userData = {};
+      school.userData.rating = rating;
+      school.userData.ratingReason = reason;
+    }
+    showDetailModal(school);
+    if (window.__onDataChange) window.__onDataChange();
+  });
 };
 
 window.__saveNotes = async function(id, btn) {
-  const notes = document.getElementById(`notes-${id}`)?.value || '';
-  await saveNotes(id, notes);
-  const school = state.allSchools.find(s => s.id === id);
-  if (school) {
-    if (!school.userData) school.userData = {};
-    school.userData.notes = notes;
-  }
-  if (btn) {
-    btn.textContent = '已儲存 ✓';
-    setTimeout(() => btn.textContent = '儲存備註', 1500);
-  }
+  const { requireAuth } = await import('./auth.js');
+  requireAuth(async () => {
+    const notes = document.getElementById(`notes-${id}`)?.value || '';
+    await saveNotes(id, notes);
+    const school = state.allSchools.find(s => s.id === id);
+    if (school) {
+      if (!school.userData) school.userData = {};
+      school.userData.notes = notes;
+    }
+    if (btn) {
+      btn.textContent = '已儲存 ✓';
+      setTimeout(() => btn.textContent = '儲存備註', 1500);
+    }
+  });
 };

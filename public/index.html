@@ -11,32 +11,8 @@
 </head>
 <body class="min-h-screen bg-base-200">
 
-  <!-- Login page (shown when not authenticated) -->
-  <div id="login-page" class="hidden min-h-screen flex items-center justify-center">
-    <div class="card bg-base-100 shadow-xl w-full max-w-sm">
-      <div class="card-body items-center text-center">
-        <h1 class="text-2xl font-bold">🏫 幫你揀小學</h1>
-        <p class="text-sm text-base-content/60 mt-1">設定你的偏好，方便整理和比較心儀學校</p>
-        <div class="w-full mt-6 space-y-3">
-          <button id="google-login-btn" class="btn btn-primary w-full">使用 Google 登入</button>
-          <div class="divider text-xs">或</div>
-          <div id="email-login-form">
-            <input type="email" id="login-email" placeholder="電郵地址" class="input input-bordered w-full mb-2">
-            <button id="email-otp-btn" class="btn btn-outline w-full">發送驗證碼</button>
-          </div>
-          <div id="otp-verify-form" class="hidden">
-            <input type="text" id="otp-code" placeholder="輸入驗證碼" class="input input-bordered w-full mb-2" maxlength="6">
-            <button id="otp-verify-btn" class="btn btn-primary w-full">驗證</button>
-            <button id="otp-back-btn" class="btn btn-ghost btn-sm w-full mt-1">返回</button>
-          </div>
-        </div>
-        <p id="login-error" class="text-error text-sm mt-2 hidden"></p>
-      </div>
-    </div>
-  </div>
-
-  <!-- App (shown when authenticated) -->
-  <div id="app-container" class="hidden">
+  <!-- App (always visible) -->
+  <div id="app-container">
 
     <!-- Desktop sidebar -->
     <aside id="sidebar" class="fixed left-0 top-0 h-full w-56 bg-base-100 border-r z-40 hidden md:flex flex-col">
@@ -57,7 +33,16 @@
           <span>👤</span><span>帳戶</span>
         </a>
       </nav>
-      <div class="p-3 border-t text-xs text-base-content/40">v2.0</div>
+      <div class="p-3 border-t">
+        <div id="sidebar-auth">
+          <button id="sidebar-login-btn" class="btn btn-primary btn-sm w-full">登入</button>
+        </div>
+        <div id="sidebar-user" class="hidden">
+          <p id="sidebar-email" class="text-xs text-base-content/60 truncate"></p>
+          <button id="sidebar-logout-btn" class="btn btn-ghost btn-xs mt-1">登出</button>
+        </div>
+        <div class="text-xs text-base-content/40 mt-2">v2.0</div>
+      </div>
     </aside>
 
     <!-- Mobile top bar -->
@@ -65,8 +50,10 @@
       <div class="flex-1">
         <span class="text-lg font-bold px-2">🏫 幫你揀小學</span>
       </div>
-      <div class="flex-none">
+      <div class="flex-none flex items-center">
         <span id="school-count-mobile" class="text-xs text-base-content/50 px-2"></span>
+        <button id="mobile-login-btn" class="btn btn-ghost btn-xs">登入</button>
+        <button id="mobile-logout-btn" class="btn btn-ghost btn-xs hidden">登出</button>
       </div>
     </div>
 
@@ -279,6 +266,34 @@
         <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
       </form>
       <div id="detail-modal-content"></div>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+  </dialog>
+
+  <!-- Login modal -->
+  <dialog id="login-modal" class="modal">
+    <div class="modal-box max-w-sm">
+      <form method="dialog">
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+      </form>
+      <div class="items-center text-center">
+        <h2 class="text-xl font-bold">登入</h2>
+        <p class="text-sm text-base-content/60 mt-1">登入以評級學校、儲存備註和設定偏好</p>
+        <div class="w-full mt-6 space-y-3">
+          <button id="google-login-btn" class="btn btn-primary w-full">使用 Google 登入</button>
+          <div class="divider text-xs">或</div>
+          <div id="email-login-form">
+            <input type="email" id="login-email" placeholder="電郵地址" class="input input-bordered w-full mb-2">
+            <button id="email-otp-btn" class="btn btn-outline w-full">發送驗證碼</button>
+          </div>
+          <div id="otp-verify-form" class="hidden">
+            <input type="text" id="otp-code" placeholder="輸入驗證碼" class="input input-bordered w-full mb-2" maxlength="6">
+            <button id="otp-verify-btn" class="btn btn-primary w-full">驗證</button>
+            <button id="otp-back-btn" class="btn btn-ghost btn-sm w-full mt-1">返回</button>
+          </div>
+        </div>
+        <p id="login-error" class="text-error text-sm mt-2 hidden"></p>
+      </div>
     </div>
     <form method="dialog" class="modal-backdrop"><button>close</button></form>
   </dialog>
