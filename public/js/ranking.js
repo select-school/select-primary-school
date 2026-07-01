@@ -1,6 +1,7 @@
 import {
   getAppState, setAppState, ratingBadge, googleSearchUrl,
-  showDetailModal, buildDistrictNetsMap
+  showDetailModal, buildDistrictNetsMap,
+  renderLinkedSecondaryCompact, renderAssessmentCompact
 } from './shared.js';
 
 let selectedForCompare = new Set();
@@ -324,12 +325,12 @@ function showComparison() {
     ['校網', s => (s.schoolNet || []).join(', ')],
     ['學費', s => s.tuition],
     ['評級', s => ratingBadge(s.userData?.rating) || '-'],
-    ['相關中學', s => s.relatedSecondary || '-'],
+    ['相關中學', s => renderLinkedSecondaryCompact(s.linkedSecondary)],
     ['佔地面積', s => s.campusArea || '-'],
     ['課室數目', s => s.classroomCount || '-'],
-    ['多元學習評估', s => `<span class="text-xs">${s.assessment || '-'}</span>`],
+    ['多元學習評估', s => `<span class="text-xs">${renderAssessmentCompact(s.assessment)}</span>`],
     ['特別室', s => `<span class="text-xs">${s.specialRooms || '-'}</span>`],
-    ['學校設施', s => `<span class="text-xs">${(typeof s.facilities === 'string' ? s.facilities : s.facilities?.otherFacilities) || '-'}</span>`],
+    ['學校設施', s => `<span class="text-xs">${s.facilities?.otherFacilities || '-'}</span>`],
   ];
 
   let html = `<div class="overflow-x-auto"><table class="table table-sm w-full">`;
