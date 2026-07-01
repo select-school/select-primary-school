@@ -75,6 +75,30 @@ export function buildDistrictNetsMap(schoolNets) {
   return map;
 }
 
+function collapseSection(title, contentHtml) {
+  if (!contentHtml) return '';
+  return `
+    <div class="collapse collapse-arrow bg-base-200 rounded-box mb-2">
+      <input type="checkbox" />
+      <div class="collapse-title font-medium text-sm py-3 min-h-0">${title}</div>
+      <div class="collapse-content text-sm">${contentHtml}</div>
+    </div>`;
+}
+
+export function renderLinkedSecondaryCompact(linkedSecondary) {
+  if (!linkedSecondary?.length) return '-';
+  const typeColors = { '一條龍': 'badge-primary', '直屬': 'badge-secondary', '聯繫': 'badge-ghost' };
+  return linkedSecondary.map(ls =>
+    `${ls.name} <span class="badge badge-xs ${typeColors[ls.type] || 'badge-ghost'}">${ls.type}</span>`
+  ).join('、');
+}
+
+export function renderAssessmentCompact(assessment) {
+  if (!assessment) return '-';
+  const a = assessment;
+  return `小一: ${a.p1Tests}測${a.p1Exams}考 | 小二至六: ${a.p2to6Tests}測${a.p2to6Exams}考`;
+}
+
 export function showDetailModal(school) {
   const content = document.getElementById('detail-modal-content');
   const ud = school.userData || {};
