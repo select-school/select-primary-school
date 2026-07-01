@@ -23,7 +23,7 @@ A Hong Kong primary school ranking viewer (香港小學排名 2026). It displays
    - `api/auth-helper.js` — creates Supabase client, extracts user ID from Bearer token
    - `api/user-data.js` — CRUD for school ratings/notes in `school_ratings` table
    - `api/preferences.js` — saves user preferences in `user_preferences` table
-   - Auth uses Supabase (Google OAuth + email OTP), env vars: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+   - Auth uses Supabase (Google OAuth only), env vars: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
    - The `npm run build` script injects `SUPABASE_URL` and `SUPABASE_ANON_KEY` into `index.html` at deploy time
 
 **Frontend** (`public/`): Single-page vanilla JS app — no build step, no framework. Uses ES modules.
