@@ -47,6 +47,14 @@ A Hong Kong primary school ranking viewer (香港小學排名 2026). It displays
 
 **Preferences shape**: `districts` (array), `schoolNets` (array of numbers), `schoolTypes` (array), `onboardingCompleted` (boolean). Stored under `_preferences` key in local dev, in `user_preferences` table on Vercel.
 
+## Deployment
+
+- **Repo**: https://github.com/select-school/select-primary-school (public)
+- **Branch**: `v2` is the production branch
+- **Auto-deploy**: Vercel is connected to the GitHub repo — `git push origin v2` triggers a production deploy automatically
+- **Env vars**: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` are configured in Vercel project settings, not in the repo
+- **Version**: bumped in 3 places — `package.json`, `public/index.html` (sidebar), `public/js/account.js` (account page)
+
 ## Key Details
 
 - District and school-net filters are bidirectionally linked — checking a district auto-checks its nets and vice versa. This sync logic is duplicated in `ranking.js`, `onboarding.js`, and `account.js`.
