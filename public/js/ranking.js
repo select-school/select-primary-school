@@ -31,8 +31,8 @@ export function applyRankingFilters(overrides) {
     updateDropdownLabel('net');
   }
   if (overrides.gender) {
-    const radio = document.querySelector(`input[name="gender"][value="${overrides.gender}"]`);
-    if (radio) radio.checked = true;
+    const cb = document.querySelector(`.gender-check[value="${overrides.gender}"]`);
+    if (cb) cb.checked = true;
   }
   render();
 }
@@ -113,14 +113,14 @@ function getFilters() {
   const search = document.getElementById('filter-search').value.trim().toLowerCase();
   const selectedDistricts = [...document.querySelectorAll('.district-check:checked')].map(cb => cb.value);
   const selectedNets = [...document.querySelectorAll('.net-check:checked')].map(cb => Number(cb.value)).filter(v => !isNaN(v));
-  const gender = document.querySelector('input[name="gender"]:checked')?.value || '';
+  const selectedGenders = [...document.querySelectorAll('.gender-check:checked')].map(cb => cb.value);
   const selectedRatings = [...document.querySelectorAll('.rating-check:checked')].map(cb => cb.value);
-  return { search, selectedDistricts, selectedNets, gender, selectedRatings };
+  return { search, selectedDistricts, selectedNets, selectedGenders, selectedRatings };
 }
 
 function applyFilters() {
   const allSchools = getAppState('allSchools');
-  const { search, selectedDistricts, selectedNets, gender, selectedRatings } = getFilters();
+  const { search, selectedDistricts, selectedNets, selectedGenders, selectedRatings } = getFilters();
 
   return allSchools.filter(school => {
     if (search && !school.name.toLowerCase().includes(search)) return false;
@@ -129,7 +129,7 @@ function applyFilters() {
       const schoolNetNums = school.schoolNet || [];
       if (!selectedNets.some(n => schoolNetNums.includes(n))) return false;
     }
-    if (gender && school.gender !== gender) return false;
+    if (selectedGenders.length > 0 && !selectedGenders.includes(school.gender)) return false;
     if (selectedRatings.length > 0) {
       const schoolRating = school.userData?.rating || null;
       if (selectedRatings.includes('Unrated') && schoolRating === null) return true;
@@ -143,7 +143,7 @@ function applyFilters() {
 
 function bindFilterEvents() {
   document.getElementById('filter-search').addEventListener('input', render);
-  document.querySelectorAll('input[name="gender"]').forEach(r => r.addEventListener('change', render));
+  document.querySelectorAll('.gender-check').forEach(cb => cb.addEventListener('change', render));
   document.querySelectorAll('.rating-check').forEach(cb => cb.addEventListener('change', render));
   document.getElementById('sort-by').addEventListener('change', render);
   document.getElementById('clear-filters').addEventListener('click', clearFilters);
@@ -165,7 +165,7 @@ function clearFilters() {
   document.querySelectorAll('.net-check').forEach(cb => { cb.checked = false; });
   document.getElementById('district-label').textContent = '全部地區';
   document.getElementById('net-label').textContent = '全部校網';
-  document.querySelector('input[name="gender"][value=""]').checked = true;
+  document.querySelectorAll('.gender-check').forEach(cb => { cb.checked = false; });
   document.querySelectorAll('.rating-check').forEach(cb => { cb.checked = false; });
   render();
 }
