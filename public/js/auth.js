@@ -90,31 +90,18 @@ async function bootApp(session) {
     if (userData[s.id]) s.userData = userData[s.id];
   });
 
-  let dashboardDirty = false;
-
   window.__onRatingChange = (schoolId) => {
     updateSchoolRating(schoolId);
-    if (getCurrentPage() === 'dashboard') {
-      initDashboard();
-    } else {
-      dashboardDirty = true;
-    }
+    if (getCurrentPage() === 'dashboard') initDashboard();
   };
 
   window.__onDataChange = () => {
     refreshRanking();
-    if (getCurrentPage() === 'dashboard') {
-      initDashboard();
-    } else {
-      dashboardDirty = true;
-    }
+    if (getCurrentPage() === 'dashboard') initDashboard();
   };
 
   initRouter((page) => {
-    if (page === 'dashboard') {
-      if (dashboardDirty) initDashboard();
-      dashboardDirty = false;
-    }
+    if (page === 'dashboard') initDashboard();
     if (page === 'account') initAccount(getAppState('session'), supabase);
   });
 
