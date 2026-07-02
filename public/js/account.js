@@ -69,7 +69,7 @@ export function initAccount(session, supabase) {
       </div>
 
       <!-- Version -->
-      <div class="text-xs text-base-content/30 text-center">v2.0.5</div>
+      <div class="text-xs text-base-content/30 text-center">v2.0.6</div>
     </div>
   `;
 

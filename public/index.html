@@ -45,7 +45,7 @@
           <p id="sidebar-email" class="text-xs text-base-content/60 truncate"></p>
           <button id="sidebar-logout-btn" class="btn btn-ghost btn-xs mt-1">登出</button>
         </div>
-        <div class="text-xs text-base-content/40 mt-2">v2.0.5</div>
+        <div class="text-xs text-base-content/40 mt-2">v2.0.6</div>
       </div>
     </aside>
 
@@ -157,6 +157,19 @@
                   </div>
                 </div>
                 <div class="form-control">
+                  <label class="label"><span class="label-text">類別</span></label>
+                  <div class="flex gap-2">
+                    <label class="label cursor-pointer gap-1">
+                      <input type="checkbox" class="category-check checkbox checkbox-sm" value="free">
+                      <span class="label-text">免費（津貼/官立）</span>
+                    </label>
+                    <label class="label cursor-pointer gap-1">
+                      <input type="checkbox" class="category-check checkbox checkbox-sm" value="paid">
+                      <span class="label-text">收費（直資/私立）</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="form-control">
                   <label class="label"><span class="label-text">評級</span></label>
                   <div class="flex gap-2 flex-wrap">
                     <label class="label cursor-pointer gap-1">
@@ -203,6 +216,7 @@
                   <th>性別</th>
                   <th>地區 / 校網</th>
                   <th>評級</th>
+                  <th>類別</th>
                   <th>學費</th>
                   <th>操作</th>
                 </tr>

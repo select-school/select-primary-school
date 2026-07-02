@@ -8,6 +8,11 @@ let selectedForCompare = new Set();
 let expandedRow = null;
 let _syncingFilters = false;
 
+function getCategoryGroup(school) {
+  const cat = school.schoolCategory || '';
+  return (cat === '資助' || cat === '官立') ? 'free' : 'paid';
+}
+
 export async function initRanking() {
   populateFilterOptions();
   bindFilterEvents();
@@ -136,12 +141,13 @@ function getFilters() {
   const selectedNets = [...document.querySelectorAll('.net-check:checked')].map(cb => Number(cb.value)).filter(v => !isNaN(v));
   const selectedGenders = [...document.querySelectorAll('.gender-check:checked')].map(cb => cb.value);
   const selectedRatings = [...document.querySelectorAll('.rating-check:checked')].map(cb => cb.value);
-  return { search, selectedDistricts, selectedNets, selectedGenders, selectedRatings };
+  const selectedCategories = [...document.querySelectorAll('.category-check:checked')].map(cb => cb.value);
+  return { search, selectedDistricts, selectedNets, selectedGenders, selectedRatings, selectedCategories };
 }
 
 function applyFilters() {
   const allSchools = getAppState('allSchools');
-  const { search, selectedDistricts, selectedNets, selectedGenders, selectedRatings } = getFilters();
+  const { search, selectedDistricts, selectedNets, selectedGenders, selectedRatings, selectedCategories } = getFilters();
 
   return allSchools.filter(school => {
     if (search && !school.name.toLowerCase().includes(search)) return false;
@@ -151,6 +157,7 @@ function applyFilters() {
       if (!selectedNets.some(n => schoolNetNums.includes(n))) return false;
     }
     if (selectedGenders.length > 0 && !selectedGenders.includes(school.gender)) return false;
+    if (selectedCategories.length > 0 && !selectedCategories.includes(getCategoryGroup(school))) return false;
     if (selectedRatings.length > 0) {
       const schoolRating = school.userData?.rating || null;
       if (selectedRatings.includes('Unrated') && schoolRating === null) return true;
@@ -169,6 +176,7 @@ function bindFilterEvents() {
     _searchTimer = setTimeout(render, 200);
   });
   document.querySelectorAll('.gender-check').forEach(cb => cb.addEventListener('change', render));
+  document.querySelectorAll('.category-check').forEach(cb => cb.addEventListener('change', render));
   document.querySelectorAll('.rating-check').forEach(cb => cb.addEventListener('change', render));
   document.getElementById('sort-by').addEventListener('change', render);
   document.getElementById('clear-filters').addEventListener('click', clearFilters);
@@ -191,6 +199,7 @@ function clearFilters() {
   document.getElementById('district-label').textContent = '全部地區';
   document.getElementById('net-label').textContent = '全部校網';
   document.querySelectorAll('.gender-check').forEach(cb => { cb.checked = false; });
+  document.querySelectorAll('.category-check').forEach(cb => { cb.checked = false; });
   document.querySelectorAll('.rating-check').forEach(cb => { cb.checked = false; });
   render();
 }
@@ -241,6 +250,7 @@ function renderTable(schools) {
       <td>${school.gender}</td>
       <td>${school.district}<br><span class="text-xs text-base-content/50">校網 ${nets}</span></td>
       <td class="rating-cell">${ratingBadge(rating)}</td>
+      <td class="text-sm">${school.schoolCategory || '-'}</td>
       <td class="text-sm">${school.tuition}</td>
       <td>
         <a href="${googleSearchUrl(school.name)}" target="_blank" class="btn btn-ghost btn-xs" title="Google 搜尋" onclick="event.stopPropagation()">🔍</a>
@@ -262,7 +272,7 @@ function renderTable(schools) {
 
     if (isExpanded) {
       const detailTr = document.createElement('tr');
-      detailTr.innerHTML = `<td colspan="8" class="p-0"><div class="detail-panel p-4 bg-base-200/50">
+      detailTr.innerHTML = `<td colspan="9" class="p-0"><div class="detail-panel p-4 bg-base-200/50">
         <button class="btn btn-sm btn-outline mb-2" onclick="event.stopPropagation()">查看詳情</button>
       </div></td>`;
       detailTr.querySelector('button').addEventListener('click', () => showDetailModal(school));
@@ -296,7 +306,7 @@ function renderCards(schools) {
           </div>
         </div>
         <h3 class="font-bold text-base mt-1">${school.name}</h3>
-        <div class="text-sm text-base-content/70">${school.gender} · ${school.district} · 校網 ${nets}</div>
+        <div class="text-sm text-base-content/70">${school.gender} · ${school.district} · 校網 ${nets} · ${school.schoolCategory || '-'}</div>
         <div class="text-sm text-base-content/60">${school.tuition}</div>
       </div>
     `;
@@ -352,6 +362,7 @@ function showComparison() {
     ['性別', s => s.gender],
     ['地區', s => s.district],
     ['校網', s => (s.schoolNet || []).join(', ')],
+    ['類別', s => s.schoolCategory || '-'],
     ['學費', s => s.tuition],
     ['評級', s => ratingBadge(s.userData?.rating) || '-'],
     ['相關中學', s => renderLinkedSecondaryCompact(s.linkedSecondary)],
