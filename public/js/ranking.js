@@ -248,7 +248,7 @@ function renderTable(schools) {
       <td class="font-mono">${school.rank}</td>
       <td class="font-medium">${school.name}</td>
       <td>${school.gender}</td>
-      <td>${school.district}<br><span class="text-xs text-base-content/50">校網 ${nets}</span></td>
+      <td>${school.district}${nets ? `<br><span class="text-xs text-base-content/50">校網 ${nets}</span>` : ''}</td>
       <td class="rating-cell">${ratingBadge(rating)}</td>
       <td class="text-sm">${school.schoolCategory || '-'}</td>
       <td class="text-sm">${school.tuition}</td>
@@ -306,7 +306,7 @@ function renderCards(schools) {
           </div>
         </div>
         <h3 class="font-bold text-base mt-1">${school.name}</h3>
-        <div class="text-sm text-base-content/70">${school.gender} · ${school.district} · 校網 ${nets} · ${school.schoolCategory || '-'}</div>
+        <div class="text-sm text-base-content/70">${school.gender} · ${school.district}${nets ? ` · 校網 ${nets}` : ''} · ${school.schoolCategory || '-'}</div>
         <div class="text-sm text-base-content/60">${school.tuition}</div>
       </div>
     `;
@@ -361,7 +361,7 @@ function showComparison() {
     ['排名', s => `#${s.rank}`],
     ['性別', s => s.gender],
     ['地區', s => s.district],
-    ['校網', s => (s.schoolNet || []).join(', ')],
+    ['校網', s => (s.schoolNet || []).join(', ') || '-'],
     ['類別', s => s.schoolCategory || '-'],
     ['學費', s => s.tuition],
     ['評級', s => ratingBadge(s.userData?.rating) || '-'],

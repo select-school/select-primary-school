@@ -274,6 +274,6 @@ function createPlaceholderCard(title, message, linkHash) {
 }
 
 function ratingBadgeInline(rating) {
-  const classes = { Top: 'badge-success', High: 'badge-warning', Medium: 'badge-ghost' };
+  const classes = { Top: 'badge-success', High: 'badge-warning', Medium: 'badge-outline' };
   return `<span class="badge ${classes[rating] || 'badge-ghost'} badge-sm">${rating}</span>`;
 }

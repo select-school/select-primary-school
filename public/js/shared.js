@@ -58,7 +58,7 @@ export async function savePreferences(prefs) {
 
 export function ratingBadge(rating) {
   if (!rating) return '';
-  const classes = { Top: 'badge-success', High: 'badge-warning', Medium: 'badge-ghost' };
+  const classes = { Top: 'badge-success', High: 'badge-warning', Medium: 'badge-outline' };
   return `<span class="badge ${classes[rating] || 'badge-ghost'} badge-sm">${rating}</span>`;
 }
 
@@ -112,7 +112,7 @@ export function showDetailModal(school) {
     <h3 class="text-lg font-bold">${school.name}</h3>
     ${school.nameEn ? `<p class="text-sm text-base-content/50">${school.nameEn}</p>` : ''}
     <p class="text-sm text-base-content/60 mb-3">
-      #${school.rank} · ${school.gender} · ${school.district} · 校網 ${nets}
+      #${school.rank} · ${school.gender} · ${school.district}${nets ? ` · 校網 ${nets}` : ''}
       ${ratingBadge(ud.rating)}
     </p>
   `;
@@ -288,7 +288,7 @@ export function showDetailModal(school) {
     <div class="flex gap-2 mb-2">
       <button class="btn btn-sm rating-btn ${ud.rating === 'Top' ? 'btn-success active' : 'btn-outline'}" onclick="window.__setRating('${school.id}', 'Top')">Top</button>
       <button class="btn btn-sm rating-btn ${ud.rating === 'High' ? 'btn-warning active' : 'btn-outline'}" onclick="window.__setRating('${school.id}', 'High')">High</button>
-      <button class="btn btn-sm rating-btn ${ud.rating === 'Medium' ? 'btn-ghost active' : 'btn-outline'}" onclick="window.__setRating('${school.id}', 'Medium')">Medium</button>
+      <button class="btn btn-sm rating-btn ${ud.rating === 'Medium' ? 'btn-info active' : 'btn-outline'}" onclick="window.__setRating('${school.id}', 'Medium')">Medium</button>
       <button class="btn btn-sm btn-outline" onclick="window.__setRating('${school.id}', null)">清除</button>
     </div>
     <textarea class="textarea textarea-bordered w-full text-sm mb-1" rows="2" placeholder="評級原因..."
